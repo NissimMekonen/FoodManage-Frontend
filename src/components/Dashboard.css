@@ -1,0 +1,99 @@
+.dashboard-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 50px 20px;
+}
+
+.welcome-message {
+  margin-bottom: 35px;
+}
+
+.welcome-message h2 {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.welcome-message p {
+  color: #7f8c8d;
+  font-size: 16px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.dash-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 35px 25px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border: 1px solid #edf2f7;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dash-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.card-inventory { border-top: 5px solid #16a085; }
+.card-suppliers { border-top: 5px solid #34495e; }
+.card-menus { border-top: 5px solid #2980b9; }
+
+.card-icon {
+  font-size: 45px;
+  margin-bottom: 20px;
+}
+
+.dash-card h3 {
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.dash-card p {
+  color: #7f8c8d;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.dash-badge-alert {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background-color: #e74c3c;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 700;
+  animation: pulse 2s infinite;
+}
+
+.dash-badge-coming {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background-color: #bdc3c7;
+  color: #7f8c8d;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); box-shadow: 0 0 10px rgba(231, 76, 60, 0.5); }
+  100% { transform: scale(1); }
+}

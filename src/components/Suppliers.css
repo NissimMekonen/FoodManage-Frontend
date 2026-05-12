@@ -1,0 +1,106 @@
+.supplier-border {
+  border-top: 4px solid #34495e !important;
+}
+
+.supplier-table-border {
+  border-top: 4px solid #34495e !important;
+}
+
+.supplier-btn {
+  background-color: #2c3e50 !important;
+}
+
+.supplier-btn:hover {
+  background-color: #1a252f !important;
+}
+
+.suppliers-list-box {
+  margin-top: 30px;
+  border-top: 1px solid #edf2f7;
+  padding-top: 20px;
+}
+
+.suppliers-list-box h3 {
+  font-size: 15px;
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+.mini-supplier-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8fafc;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #e2e8f0;
+  transition: background-color 0.15s ease;
+}
+
+.mini-supplier-card:hover {
+  background-color: #edf2f7;
+}
+
+.supplier-card-subtext {
+  font-size: 12px;
+  color: #7f8c8d;
+}
+
+.mini-del-btn {
+  padding: 2px 6px !important;
+  font-size: 11px !important;
+}
+
+.order-generator-box {
+  margin-bottom: 25px;
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.order-generator-box label {
+  结构: block;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.order-generator-box select {
+  width: 100%;
+  padding: 11px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e0;
+  font-size: 14px;
+}
+
+.order-results {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+
+.order-results h3 {
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+.no-missing-alert {
+  text-align: center;
+  padding: 40px;
+  background: #f0fff4;
+  border-radius: 8px;
+  border: 1px solid #c6f6d5;
+  color: #22543d;
+}
+
+.choose-supplier-prompt {
+  text-align: center;
+  padding: 50px;
+  color: #7f8c8d;
+  font-size: 14px;
+}
