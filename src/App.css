@@ -16,6 +16,15 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
 .App-header h1 {
   margin: 0;
   font-size: 22px;
@@ -23,7 +32,161 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* סידור המסך לשני חלקים צד לצד */
+/* כפתור חזרה לדף הראשי */
+.back-to-dash-btn {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.back-to-dash-btn:hover {
+  background-color: white;
+  color: #2c3e50;
+}
+
+/* --- עיצוב מסך הקוביות הראשי (Dashboard) --- */
+.dashboard-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 50px 20px;
+}
+
+.welcome-message {
+  margin-bottom: 35px;
+}
+
+.welcome-message h2 {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.welcome-message p {
+  color: #7f8c8d;
+  font-size: 16px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+/* כרטיסיית קובייה בודדת */
+.dash-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 35px 25px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border: 1px solid #edf2f7;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dash-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* קווים עליונים צבעוניים לקוביות כדי לשמור על האחידות של הצבעים שלך */
+.card-inventory { border-top: 5px solid #16a085; }
+.card-suppliers { border-top: 5px solid #34495e; }
+.card-menus { border-top: 5px solid #2980b9; }
+
+.card-icon {
+  font-size: 45px;
+  margin-bottom: 20px;
+}
+
+.dash-card h3 {
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.dash-card p {
+  color: #7f8c8d;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* תגיות בתוך הקוביות */
+.dash-badge-alert {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background-color: #e74c3c;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 700;
+  animation: pulse 2s infinite;
+}
+
+.dash-badge-coming {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background-color: #bdc3c7;
+  color: #7f8c8d;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); box-shadow: 0 0 10px rgba(231, 76, 60, 0.5); }
+  100% { transform: scale(1); }
+}
+
+/* --- מסכים זמניים (Placeholders) --- */
+.placeholder-screen {
+  max-width: 700px;
+  margin: 60px auto;
+  padding: 0 20px;
+}
+
+.placeholder-card {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border-top: 4px solid #34495e;
+}
+
+.placeholder-card h2 {
+  font-size: 22px;
+  margin-bottom: 15px;
+}
+
+.placeholder-card p {
+  color: #555;
+  line-height: 1.6;
+}
+
+.status-note {
+  margin-top: 25px !important;
+  font-weight: 600;
+  color: #16a085 !important;
+}
+
+/* --- כל שאר העיצוב המקורי של המלאי שלך (נשמר במדויק) --- */
 .main-layout {
   display: flex;
   gap: 30px;
@@ -32,7 +195,6 @@ body {
   margin: 0 auto;
 }
 
-/* עיצוב התיבות (טופס וטבלה) */
 .form-section, .table-section {
   background: #ffffff;
   padding: 30px;
@@ -60,20 +222,9 @@ h2 {
   margin-bottom: 25px;
 }
 
-/* שדות הטופס */
-.form-group {
-  margin-bottom: 18px;
-}
-
-.form-row {
-  display: flex;
-  gap: 12px;
-}
-
-.form-row .form-group {
-  flex: 1;
-}
-
+.form-group { margin-bottom: 18px; }
+.form-row { display: flex; gap: 12px; }
+.form-row .form-group { flex: 1; }
 .form-group label {
   display: block;
   margin-bottom: 8px;
@@ -82,8 +233,7 @@ h2 {
   font-size: 14px;
 }
 
-.form-group input,
-.form-group select {
+.form-group input, .form-group select {
   width: 100%;
   padding: 11px 15px;
   border: 1px solid #e2e8f0;
@@ -94,15 +244,13 @@ h2 {
   transition: all 0.2s ease;
 }
 
-.form-group input:focus,
-.form-group select:focus {
+.form-group input:focus, .form-group select:focus {
   border-color: #16a085;
   background-color: #fff;
   outline: none;
   box-shadow: 0 0 0 3px rgba(22, 160, 133, 0.1);
 }
 
-/* כפתור הוספה למלאי */
 .submit-btn {
   background-color: #16a085;
   color: white;
@@ -117,11 +265,8 @@ h2 {
   transition: background 0.2s;
 }
 
-.submit-btn:hover {
-  background-color: #117a65;
-}
+.submit-btn:hover { background-color: #117a65; }
 
-/* --- אזור כותרת הטבלה והחיפוש החדש --- */
 .table-header-container {
   display: flex;
   justify-content: space-between;
@@ -131,49 +276,30 @@ h2 {
   margin-bottom: 25px;
 }
 
-.table-header-container h2 {
-  margin-bottom: 0;
-}
+.table-header-container h2 { margin-bottom: 0; }
 
-/* מיכל החיפוש האלגנטי */
-.search-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 280px;
-}
+.search-container { position: relative; display: flex; align-items: center; width: 280px; }
+.search-icon { position: absolute; right: 14px; color: #a0aec0; font-size: 14px; pointer-events: none; }
 
-/* אייקון זכוכית מגדלת מודרני */
-.search-icon {
-  position: absolute;
-  right: 14px;
-  color: #a0aec0;
-  font-size: 14px;
-  pointer-events: none;
-}
-
-/* שדה קלט החיפוש היוקרתי */
 .modern-search-input {
   width: 100%;
   padding: 10px 38px 10px 35px;
   font-size: 14px;
   border: 1px solid #e2e8f0;
-  border-radius: 50px; /* צורת קפסולה מודרנית */
+  border-radius: 50px;
   background-color: #f8fafc;
   color: #2d3748;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
 }
 
-/* אפקט מדהים בזמן לחיצה על החיפוש */
 .modern-search-input:focus {
   border-color: #16a085;
   background-color: #ffffff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 0 0 3px rgba(22, 160, 133, 0.15);
-  width: 310px; /* מתרחב מעט הצידה בצורה חלקה */
+  width: 310px;
 }
 
-/* כפתור ה-X למחיקה מהירה של החיפוש */
 .clear-search-btn {
   position: absolute;
   left: 14px;
@@ -189,58 +315,20 @@ h2 {
   transition: color 0.2s;
 }
 
-.clear-search-btn:hover {
-  color: #e53e3e;
-}
+.clear-search-btn:hover { color: #e53e3e; }
 
-/* עיצוב הטבלה */
-.table-wrapper {
-  overflow-x: auto;
-}
+.table-wrapper { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; text-align: right; }
+th, td { padding: 14px 18px; border-bottom: 1px solid #edf2f7; font-size: 14px; }
+th { background-color: #f7fafc; color: #4a5568; font-weight: 600; }
+.low-stock-row { background-color: #fff5f5; }
+.low-stock-row:hover { background-color: #fed7d7; }
+tr:hover { background-color: #f8fafc; }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: right;
-}
-
-th, td {
-  padding: 14px 18px;
-  border-bottom: 1px solid #edf2f7;
-  font-size: 14px;
-}
-
-th {
-  background-color: #f7fafc;
-  color: #4a5568;
-  font-weight: 600;
-}
-
-.low-stock-row {
-  background-color: #fff5f5;
-}
-
-.low-stock-row:hover {
-  background-color: #fed7d7;
-}
-
-tr:hover {
-  background-color: #f8fafc;
-}
-
-/* תגיות סטטוס */
-.badge {
-  padding: 4px 10px;
-  border-radius: 50px;
-  font-size: 12px;
-  font-weight: 600;
-  display: inline-block;
-}
-
+.badge { padding: 4px 10px; border-radius: 50px; font-size: 12px; font-weight: 600; display: inline-block; }
 .badge.success { background-color: #c6f6d5; color: #22543d; }
 .badge.danger { background-color: #fed7d7; color: #742a2a; }
 
-/* כפתורי פלוס מינוס מהירים */
 .qty-btn {
   padding: 6px 14px;
   margin-left: 6px;
@@ -252,14 +340,12 @@ tr:hover {
   color: #4a5568;
   transition: all 0.15s ease;
 }
-
 .qty-btn.plus:hover { background-color: #f0fff4; color: #38a169; border-color: #38a169; }
 .qty-btn.minus:hover { background-color: #fff5f5; color: #e53e3e; border-color: #e53e3e; }
 
-/* עיצוב כפתור המחיקה (אייקון פח האשפה) */
 .delete-btn {
   padding: 6px 10px;
-  margin-right: 8px; /* מרווח קטן מכפתורי הפלוס-מינוס */
+  margin-right: 8px;
   border: 1px solid #fed7d7;
   border-radius: 6px;
   background-color: #fff5f5;
@@ -267,21 +353,9 @@ tr:hover {
   font-size: 13px;
   transition: all 0.2s ease;
 }
+.delete-btn:hover { background-color: #e53e3e; border-color: #e53e3e; transform: scale(1.05); }
 
-.delete-btn:hover {
-  background-color: #e53e3e;
-  border-color: #e53e3e;
-  transform: scale(1.05); /* הגדלה עדינה מאוד בזמן מעבר עכבר */
-}
-
-/* מיכל עדכון הכמויות בתוך הטבלה */
-.bulk-update-container {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* תיבת הקלט הקטנה בתוך הטבלה */
+.bulk-update-container { display: flex; align-items: center; gap: 4px; }
 .table-input {
   width: 70px;
   padding: 6px 8px;
@@ -292,13 +366,8 @@ tr:hover {
   outline: none;
   background-color: #f8fafc;
 }
+.table-input:focus { border-color: #16a085; background-color: white; }
 
-.table-input:focus {
-  border-color: #16a085;
-  background-color: white;
-}
-
-/* כפתורי הפלוס והמינוס של הכמות המרוכזת */
 .bulk-btn {
   padding: 6px 10px;
   border: none;
@@ -309,65 +378,22 @@ tr:hover {
   color: white;
   transition: background 0.15s ease;
 }
+.bulk-btn.bulk-plus { background-color: #2ecc71; }
+.bulk-btn.bulk-plus:hover { background-color: #27ae60; }
+.bulk-btn.bulk-minus { background-color: #e74c3c; }
+.bulk-btn.bulk-minus:hover { background-color: #c0392b; }
 
-.bulk-btn.bulk-plus {
-  background-color: #2ecc71; /* ירוק */
+.categories-filter-bar { display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; background-color: #f1f3f5; padding: 6px; border-radius: 10px; }
+.category-tab-btn { padding: 8px 16px; border: none; background: transparent; color: #4a5568; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 8px; transition: all 0.2s ease; }
+.category-tab-btn:hover { background-color: rgba(0, 0, 0, 0.04); color: #2c3e50; }
+.category-tab-btn.active { background-color: #ffffff; color: #16a085; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
+.table-category-tag { background-color: #edf2f7; color: #4a5568; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+
+/* אנימציה כניסה רכה למסכים */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
 }
-
-.bulk-btn.bulk-plus:hover {
-  background-color: #27ae60;
-}
-
-.bulk-btn.bulk-minus {
-  background-color: #e74c3c; /* אדום */
-}
-
-.bulk-btn.bulk-minus:hover {
-  background-color: #c0392b;
-}
-
-/* סרגל כפתורי קטגוריות */
-.categories-filter-bar {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
-  background-color: #f1f3f5;
-  padding: 6px;
-  border-radius: 10px;
-}
-
-/* כפתור קטגוריה בודד */
-.category-tab-btn {
-  padding: 8px 16px;
-  border: none;
-  background: transparent;
-  color: #4a5568;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.category-tab-btn:hover {
-  background-color: rgba(0, 0, 0, 0.04);
-  color: #2c3e50;
-}
-
-/* כפתור קטגוריה פעיל (לחוץ) */
-.category-tab-btn.active {
-  background-color: #ffffff;
-  color: #16a085;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-/* תגית קטגוריה קטנה בתוך הטבלה */
-.table-category-tag {
-  background-color: #edf2f7;
-  color: #4a5568;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
