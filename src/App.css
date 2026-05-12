@@ -1,38 +1,373 @@
-.App {
-  text-align: center;
+/* הגדרות כלליות ונקיות למסך */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f8f9fa;
+  direction: rtl;
+  text-align: right;
+  color: #2c3e50;
 }
 
-.App-logo {
-  height: 40vmin;
+/* סרגל עליון אלגנטי */
+.App-header {
+  background: linear-gradient(135deg, #2c3e50, #16a085);
+  color: white;
+  padding: 18px 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.App-header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* סידור המסך לשני חלקים צד לצד */
+.main-layout {
+  display: flex;
+  gap: 30px;
+  padding: 35px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* עיצוב התיבות (טופס וטבלה) */
+.form-section, .table-section {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.form-section {
+  flex: 1;
+  min-width: 320px;
+  height: fit-content;
+  border-top: 4px solid #16a085;
+}
+
+.table-section {
+  flex: 2.5;
+  border-top: 4px solid #2c3e50;
+}
+
+h2 {
+  margin-top: 0;
+  color: #2c3e50;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 25px;
+}
+
+/* שדות הטופס */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 11px 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 14px;
+  background-color: #f8fafc;
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #16a085;
+  background-color: #fff;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(22, 160, 133, 0.1);
+}
+
+/* כפתור הוספה למלאי */
+.submit-btn {
+  background-color: #16a085;
+  color: white;
+  padding: 13px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #117a65;
+}
+
+/* --- אזור כותרת הטבלה והחיפוש החדש --- */
+.table-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #edf2f7;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.table-header-container h2 {
+  margin-bottom: 0;
+}
+
+/* מיכל החיפוש האלגנטי */
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 280px;
+}
+
+/* אייקון זכוכית מגדלת מודרני */
+.search-icon {
+  position: absolute;
+  right: 14px;
+  color: #a0aec0;
+  font-size: 14px;
   pointer-events: none;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* שדה קלט החיפוש היוקרתי */
+.modern-search-input {
+  width: 100%;
+  padding: 10px 38px 10px 35px;
+  font-size: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 50px; /* צורת קפסולה מודרנית */
+  background-color: #f8fafc;
+  color: #2d3748;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* אפקט מדהים בזמן לחיצה על החיפוש */
+.modern-search-input:focus {
+  border-color: #16a085;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 0 0 3px rgba(22, 160, 133, 0.15);
+  width: 310px; /* מתרחב מעט הצידה בצורה חלקה */
+}
+
+/* כפתור ה-X למחיקה מהירה של החיפוש */
+.clear-search-btn {
+  position: absolute;
+  left: 14px;
+  background: none;
+  border: none;
+  color: #cbd5e0;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 4px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  transition: color 0.2s;
+}
+
+.clear-search-btn:hover {
+  color: #e53e3e;
+}
+
+/* עיצוב הטבלה */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: right;
+}
+
+th, td {
+  padding: 14px 18px;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 14px;
+}
+
+th {
+  background-color: #f7fafc;
+  color: #4a5568;
+  font-weight: 600;
+}
+
+.low-stock-row {
+  background-color: #fff5f5;
+}
+
+.low-stock-row:hover {
+  background-color: #fed7d7;
+}
+
+tr:hover {
+  background-color: #f8fafc;
+}
+
+/* תגיות סטטוס */
+.badge {
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.badge.success { background-color: #c6f6d5; color: #22543d; }
+.badge.danger { background-color: #fed7d7; color: #742a2a; }
+
+/* כפתורי פלוס מינוס מהירים */
+.qty-btn {
+  padding: 6px 14px;
+  margin-left: 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+  color: #4a5568;
+  transition: all 0.15s ease;
+}
+
+.qty-btn.plus:hover { background-color: #f0fff4; color: #38a169; border-color: #38a169; }
+.qty-btn.minus:hover { background-color: #fff5f5; color: #e53e3e; border-color: #e53e3e; }
+
+/* עיצוב כפתור המחיקה (אייקון פח האשפה) */
+.delete-btn {
+  padding: 6px 10px;
+  margin-right: 8px; /* מרווח קטן מכפתורי הפלוס-מינוס */
+  border: 1px solid #fed7d7;
+  border-radius: 6px;
+  background-color: #fff5f5;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  background-color: #e53e3e;
+  border-color: #e53e3e;
+  transform: scale(1.05); /* הגדלה עדינה מאוד בזמן מעבר עכבר */
+}
+
+/* מיכל עדכון הכמויות בתוך הטבלה */
+.bulk-update-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* תיבת הקלט הקטנה בתוך הטבלה */
+.table-input {
+  width: 70px;
+  padding: 6px 8px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
+  outline: none;
+  background-color: #f8fafc;
+}
+
+.table-input:focus {
+  border-color: #16a085;
+  background-color: white;
+}
+
+/* כפתורי הפלוס והמינוס של הכמות המרוכזת */
+.bulk-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
   color: white;
+  transition: background 0.15s ease;
 }
 
-.App-link {
-  color: #61dafb;
+.bulk-btn.bulk-plus {
+  background-color: #2ecc71; /* ירוק */
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.bulk-btn.bulk-plus:hover {
+  background-color: #27ae60;
+}
+
+.bulk-btn.bulk-minus {
+  background-color: #e74c3c; /* אדום */
+}
+
+.bulk-btn.bulk-minus:hover {
+  background-color: #c0392b;
+}
+
+/* סרגל כפתורי קטגוריות */
+.categories-filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  background-color: #f1f3f5;
+  padding: 6px;
+  border-radius: 10px;
+}
+
+/* כפתור קטגוריה בודד */
+.category-tab-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: #4a5568;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.category-tab-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  color: #2c3e50;
+}
+
+/* כפתור קטגוריה פעיל (לחוץ) */
+.category-tab-btn.active {
+  background-color: #ffffff;
+  color: #16a085;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* תגית קטגוריה קטנה בתוך הטבלה */
+.table-category-tag {
+  background-color: #edf2f7;
+  color: #4a5568;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
 }
