@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Inventory.css';
+import { createProduct, updateProduct, deleteProduct } from '../api';
 
 const CATEGORIES = [
   { id: 'all', name: 'הכל' },
@@ -15,6 +16,7 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [bulkInputs, setBulkInputs] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     quantity: '',
@@ -28,19 +30,40 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newItem = {
-      id: Date.now(),
-      name: formData.name,
-      quantity: parseFloat(formData.quantity),
-      unit: formData.unit,
-      minQuantity: parseFloat(formData.minQuantity),
-      category: formData.category,
-      supplierId: formData.supplierId
-    };
-    setInventory([...inventory, newItem]);
-    setFormData({ ...formData, name: '', quantity: '', minQuantity: '' });
+    setIsLoading(true);
+
+    try {
+      // ✅ שלח ל-Backend
+      const newProduct = await createProduct({
+        name: formData.name,
+        category: formData.category,
+        quantity: parseFloat(formData.quantity),
+        expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // +90 ימים
+        alertBeforeDays: 7
+      });
+
+      // ✅ הוסף ל-State
+      const newItem = {
+        id: newProduct.id,
+        name: newProduct.name,
+        quantity: newProduct.quantity,
+        unit: formData.unit,
+        minQuantity: parseFloat(formData.minQuantity) || 5,
+        category: newProduct.category,
+        supplierId: formData.supplierId
+      };
+
+      setInventory([...inventory, newItem]);
+      setFormData({ ...formData, name: '', quantity: '', minQuantity: '' });
+      alert('✅ המוצר נוסף בהצלחה!');
+    } catch (err) {
+      console.error('Error creating product:', err);
+      alert('❌ שגיאה בהוספת מוצר: ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBulkInputChange = (id, value) => {
@@ -55,9 +78,21 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
     setBulkInputs({ ...bulkInputs, [id]: '' });
   };
 
-  const deleteItem = (id, name) => {
-    if (window.confirm(`האם אתה בטוח שברצונך למחוק את "${name}" מהמלאי?`)) {
+  const deleteItem = async (id, name) => {
+    if (!window.confirm(`האם אתה בטוח שברצונך למחוק את "${name}" מהמלאי?`)) {
+      return;
+    }
+
+    try {
+      // ✅ מחק מ-Backend
+      await deleteProduct(id);
+      
+      // ✅ מחק מ-State
       setInventory(inventory.filter(item => item.id !== id));
+      alert('✅ המוצר נמחק בהצלחה!');
+    } catch (err) {
+      console.error('Error deleting product:', err);
+      alert('❌ שגיאה במחיקת מוצר: ' + err.message);
     }
   };
 
@@ -75,17 +110,38 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>שם הפריט *</label>
-            <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="למשל: חומוס גרגירים" required />
+            <input 
+              type="text" 
+              name="name" 
+              value={formData.name} 
+              onChange={handleChange} 
+              placeholder="למשל: חומוס גרגירים" 
+              required 
+              disabled={isLoading}
+            />
           </div>
 
           <div className="form-row">
             <div className="form-group">
               <label>כמות נוכחית *</label>
-              <input type="number" step="0.01" name="quantity" value={formData.quantity} onChange={handleChange} required />
+              <input 
+                type="number" 
+                step="0.01" 
+                name="quantity" 
+                value={formData.quantity} 
+                onChange={handleChange} 
+                required 
+                disabled={isLoading}
+              />
             </div>
             <div className="form-group">
               <label>יחידת מידה</label>
-              <select name="unit" value={formData.unit} onChange={handleChange}>
+              <select 
+                name="unit" 
+                value={formData.unit} 
+                onChange={handleChange}
+                disabled={isLoading}
+              >
                 <option value="ק''ג">ק"ג</option>
                 <option value="ליטר">ליטר</option>
                 <option value="יחידות">יחידות</option>
@@ -96,7 +152,12 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
           <div className="form-row">
             <div className="form-group">
               <label>קטגוריית מוצר</label>
-              <select name="category" value={formData.category} onChange={handleChange}>
+              <select 
+                name="category" 
+                value={formData.category} 
+                onChange={handleChange}
+                disabled={isLoading}
+              >
                 {CATEGORIES.filter(cat => cat.id !== 'all').map(cat => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
@@ -105,7 +166,12 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
 
             <div className="form-group">
               <label>ספק ברירת מחדל</label>
-              <select name="supplierId" value={formData.supplierId} onChange={handleChange}>
+              <select 
+                name="supplierId" 
+                value={formData.supplierId} 
+                onChange={handleChange}
+                disabled={isLoading}
+              >
                 {suppliers.map(sup => (
                   <option key={sup.id} value={sup.id}>{sup.name}</option>
                 ))}
@@ -115,10 +181,20 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
 
           <div className="form-group">
             <label>מלאי מינימום להתראה *</label>
-            <input type="number" step="0.01" name="minQuantity" value={formData.minQuantity} onChange={handleChange} required />
+            <input 
+              type="number" 
+              step="0.01" 
+              name="minQuantity" 
+              value={formData.minQuantity} 
+              onChange={handleChange} 
+              required 
+              disabled={isLoading}
+            />
           </div>
 
-          <button type="submit" className="submit-btn">הוסף למזווה</button>
+          <button type="submit" className="submit-btn" disabled={isLoading}>
+            {isLoading ? 'מוסיף...' : 'הוסף למזווה'}
+          </button>
         </form>
       </section>
 
@@ -128,14 +204,26 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
           <h2>המזווה שלך (חומרי גלם)</h2>
           <div className="search-container">
             <span className="search-icon">🔍</span>
-            <input type="text" className="modern-search-input" placeholder="חפש חומר גלם..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <input 
+              type="text" 
+              className="modern-search-input" 
+              placeholder="חפש חומר גלם..." 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+            />
             {searchTerm && <button className="clear-search-btn" onClick={() => setSearchTerm('')}>✕</button>}
           </div>
         </div>
 
         <div className="categories-filter-bar">
           {CATEGORIES.map(cat => (
-            <button key={cat.id} className={`category-tab-btn ${selectedCategory === cat.id ? 'active' : ''}`} onClick={() => setSelectedCategory(cat.id)}>{cat.name}</button>
+            <button 
+              key={cat.id} 
+              className={`category-tab-btn ${selectedCategory === cat.id ? 'active' : ''}`} 
+              onClick={() => setSelectedCategory(cat.id)}
+            >
+              {cat.name}
+            </button>
           ))}
         </div>
 
@@ -177,7 +265,15 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
                       </td>
                       <td>
                         <div className="bulk-update-container">
-                          <input type="number" placeholder="כמות..." className="table-input" value={bulkInputs[item.id] || ''} onChange={(e) => handleBulkInputChange(item.id, e.target.value)} min="0" step="0.01" />
+                          <input 
+                            type="number" 
+                            placeholder="כמות..." 
+                            className="table-input" 
+                            value={bulkInputs[item.id] || ''} 
+                            onChange={(e) => handleBulkInputChange(item.id, e.target.value)} 
+                            min="0" 
+                            step="0.01" 
+                          />
                           <button className="bulk-btn bulk-plus" onClick={() => handleBulkUpdate(item.id, true)}>+</button>
                           <button className="bulk-btn bulk-minus" onClick={() => handleBulkUpdate(item.id, false)}>-</button>
                         </div>
