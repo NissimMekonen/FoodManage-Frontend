@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import './Inventory.css';
+﻿import React, { useState, useEffect } from 'react';
+import './styles/inventory.css';
 import { createProduct, updateProduct, deleteProduct } from '../api';
+import ConfirmModal from './ConfirmModal';
 
 const CATEGORIES = [
   { id: 'all', name: 'הכל' },
@@ -12,20 +13,28 @@ const CATEGORIES = [
   { id: 'other', name: 'אחר' }
 ];
 
-function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
+function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToast, isAdmin }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [bulkInputs, setBulkInputs] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [confirm, setConfirm] = useState({ open: false, title: '', message: '', onConfirm: null });
   const [formData, setFormData] = useState({
     name: '',
     quantity: '',
     unit: "ק''ג",
     minQuantity: '',
     category: 'dairy',
-    supplierId: suppliers[0]?.id || ''
+    supplierId: ''
   });
 
+  // ✅ עדכן ספק ברירת מחדל כשהספקים נטענים
+  useEffect(() => {
+    if (suppliers.length > 0 && !formData.supplierId) {
+      setFormData(prev => ({ ...prev, supplierId: String(suppliers[0].id) }));
+    }
+  }, [suppliers]);
+  
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -40,8 +49,9 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
         name: formData.name,
         category: formData.category,
         quantity: parseFloat(formData.quantity),
-        expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // +90 ימים
-        alertBeforeDays: 7
+        expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+        alertBeforeDays: parseFloat(formData.minQuantity) || 5,
+        supplierId: formData.supplierId || null
       });
 
       // ✅ הוסף ל-State
@@ -57,10 +67,10 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
 
       setInventory([...inventory, newItem]);
       setFormData({ ...formData, name: '', quantity: '', minQuantity: '' });
-      alert('✅ המוצר נוסף בהצלחה!');
+      showToast('המוצר נוסף בהצלחה!', 'success');
     } catch (err) {
       console.error('Error creating product:', err);
-      alert('❌ שגיאה בהוספת מוצר: ' + err.message);
+      showToast('שגיאה בהוספת מוצר: ' + err.message, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -70,30 +80,30 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
     setBulkInputs({ ...bulkInputs, [id]: value });
   };
 
-  const handleBulkUpdate = (id, isAddition) => {
+  const handleBulkUpdate = (id) => {
     const inputValue = parseFloat(bulkInputs[id]);
-    if (isNaN(inputValue) || inputValue <= 0) return;
-    const amount = isAddition ? inputValue : -inputValue;
-    updateQuantity(id, amount);
+    if (isNaN(inputValue)) return;
+    updateQuantity(id, inputValue);
     setBulkInputs({ ...bulkInputs, [id]: '' });
   };
 
-  const deleteItem = async (id, name) => {
-    if (!window.confirm(`האם אתה בטוח שברצונך למחוק את "${name}" מהמלאי?`)) {
-      return;
-    }
-
-    try {
-      // ✅ מחק מ-Backend
-      await deleteProduct(id);
-      
-      // ✅ מחק מ-State
-      setInventory(inventory.filter(item => item.id !== id));
-      alert('✅ המוצר נמחק בהצלחה!');
-    } catch (err) {
-      console.error('Error deleting product:', err);
-      alert('❌ שגיאה במחיקת מוצר: ' + err.message);
-    }
+  const deleteItem = (id, name) => {
+    setConfirm({
+      open: true,
+      title: 'מחיקת מוצר',
+      message: `האם למחוק את "${name}" מהמלאי?`,
+      onConfirm: async () => {
+        setConfirm(c => ({ ...c, open: false }));
+        try {
+          await deleteProduct(id);
+          setInventory(inventory.filter(item => item.id !== id));
+          showToast('המוצר נמחק בהצלחה!', 'success');
+        } catch (err) {
+          console.error('Error deleting product:', err);
+          showToast('שגיאה במחיקת מוצר: ' + err.message, 'error');
+        }
+      }
+    });
   };
 
   const filteredInventory = inventory.filter(item => {
@@ -104,8 +114,17 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
 
   return (
     <div className="main-layout animate-fade-in">
-      {/* צד ימין: טופס הוספה */}
-      <section className="form-section">
+      {/* צד ימין: טופס הוספה - רק למנהל */}
+      {!isAdmin && (
+        <section className="form-section readonly-section">
+          <div className="readonly-content">
+            <div className="readonly-emoji">👀</div>
+            <h3>מצב צפייה בלבד</h3>
+            <p>אין לך הרשאה לשנות את המלאי</p>
+          </div>
+        </section>
+      )}
+      {isAdmin && (<section className="form-section">
         <h2>הוספת חומר גלם חדש</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -197,6 +216,7 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
           </button>
         </form>
       </section>
+      )}
 
       {/* צד שמאל: טבלה */}
       <section className="table-section">
@@ -235,6 +255,7 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
                 <th>קטגוריה</th>
                 <th>ספק משויך</th>
                 <th>כמות במלאי</th>
+                <th>מינימום</th>
                 <th>סטטוס</th>
                 <th>עדכון מהיר</th>
                 <th>עדכון מרוכז</th>
@@ -246,7 +267,7 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
                 filteredInventory.map((item) => {
                   const isLowStock = item.quantity <= item.minQuantity;
                   const catName = CATEGORIES.find(c => c.id === item.category)?.name || 'אחר';
-                  const supName = suppliers.find(s => s.id === item.supplierId)?.name || 'ללא ספק';
+                  const supName = suppliers.find(s => String(s.id) === String(item.supplierId))?.name || 'ללא ספק';
                   
                   return (
                     <tr key={item.id} className={isLowStock ? "low-stock-row" : ""}>
@@ -254,43 +275,58 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity }) {
                       <td><span className="table-category-tag">{catName}</span></td>
                       <td><span className="table-supplier-tag">{supName}</span></td>
                       <td>{item.quantity} {item.unit}</td>
+                      <td>{item.minQuantity} {item.unit}</td>
                       <td>
                         <span className={`badge ${isLowStock ? "danger" : "success"}`}>
                           {isLowStock ? "חסר!" : "תקין"}
                         </span>
                       </td>
-                      <td>
-                        <button className="qty-btn plus" onClick={() => updateQuantity(item.id, 1)}>+1</button>
-                        <button className="qty-btn minus" onClick={() => updateQuantity(item.id, -1)}>-1</button>
-                      </td>
-                      <td>
-                        <div className="bulk-update-container">
-                          <input 
-                            type="number" 
-                            placeholder="כמות..." 
-                            className="table-input" 
-                            value={bulkInputs[item.id] || ''} 
-                            onChange={(e) => handleBulkInputChange(item.id, e.target.value)} 
-                            min="0" 
-                            step="0.01" 
-                          />
-                          <button className="bulk-btn bulk-plus" onClick={() => handleBulkUpdate(item.id, true)}>+</button>
-                          <button className="bulk-btn bulk-minus" onClick={() => handleBulkUpdate(item.id, false)}>-</button>
-                        </div>
-                      </td>
-                      <td>
-                        <button className="delete-btn" onClick={() => deleteItem(item.id, item.name)}>🗑️</button>
-                      </td>
+                      {isAdmin ? (
+                        <>
+                          <td>
+                            <div className="quick-update-btns">
+                              <button className="qty-btn plus" onClick={() => updateQuantity(item.id, 1)}>+1</button>
+                              <button className="qty-btn minus" onClick={() => updateQuantity(item.id, -1)}>-1</button>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="bulk-update-container">
+                              <input
+                                type="number"
+                                placeholder="כמות..."
+                                className="table-input"
+                                value={bulkInputs[item.id] || ''}
+                                onChange={(e) => handleBulkInputChange(item.id, e.target.value)}
+                                step="0.01"
+                              />
+                              <button className="bulk-btn bulk-plus" onClick={() => handleBulkUpdate(item.id)}>עדכון</button>
+                            </div>
+                          </td>
+                          <td>
+                            <button className="delete-btn" onClick={() => deleteItem(item.id, item.name)}>🗑️</button>
+                          </td>
+                        </>
+                      ) : (
+                        <td colSpan="3" className="td-view-only">צפייה בלבד</td>
+                      )}
                     </tr>
                   );
                 })
               ) : (
-                <tr><td colSpan="8" style={{ textAlign: 'center', color: '#888', padding: '35px' }}>לא נמצאו חומרי גלם מתאימים</td></tr>
+                <tr><td colSpan="8" className="td-empty">לא נמצאו חומרי גלם מתאימים</td></tr>
               )}
             </tbody>
           </table>
         </div>
       </section>
+
+      <ConfirmModal
+        isOpen={confirm.open}
+        title={confirm.title}
+        message={confirm.message}
+        onConfirm={confirm.onConfirm}
+        onCancel={() => setConfirm(c => ({ ...c, open: false }))}
+      />
     </div>
   );
 }

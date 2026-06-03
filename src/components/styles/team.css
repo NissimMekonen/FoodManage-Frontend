@@ -1,0 +1,27 @@
+.team-border { border-top: 4px solid var(--purple) !important; }
+.team-btn    { background: linear-gradient(135deg, var(--purple), #6c3483) !important; }
+
+.role-selector { display: flex; gap: 12px; margin-top: 6px; }
+
+.role-card {
+  flex: 1;
+  border: 2px solid #e0e0e0;
+  border-radius: var(--radius-lg);
+  padding: 13px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fafafa;
+}
+
+.role-card:hover,
+.role-card.active { border-color: var(--purple); background: #f5eef8; }
+.role-card.active { box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.15); }
+
+.role-icon { font-size: 1.5rem; margin-bottom: 5px; }
+.role-name { font-weight: 700; font-size: 0.88rem; color: #333; margin-bottom: 3px; }
+.role-desc { font-size: 0.7rem; color: #888; }
+
+.team-placeholder { text-align: center; color: #888; padding: 40px; }
+
+.self-badge { font-size: 0.72rem; color: var(--text-muted); font-weight: 400; margin-right: 4px; }

@@ -2,7 +2,7 @@
 const API_URL = 'http://localhost:5148/api';
 
 // Helper function to get token
-const getToken = () => localStorage.getItem('token');
+const getToken = () => sessionStorage.getItem('token');
 
 // Helper function for API calls
 const apiCall = async (endpoint, options = {}) => {
@@ -19,6 +19,13 @@ const apiCall = async (endpoint, options = {}) => {
         ...options,
         headers
     });
+
+    if (response.status === 401) {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('username');
+        window.dispatchEvent(new Event('auth-expired'));
+        throw new Error('401');
+    }
 
     if (!response.ok) {
         throw new Error(`API Error: ${response.status}`);
@@ -51,6 +58,29 @@ export const register = async (businessName, username, email, password) => {
     });
 };
 
+// ========== AUTH - USER MANAGEMENT ==========
+export const changePassword = async (currentPassword, newPassword) => {
+    return apiCall('/Auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ currentPassword, newPassword })
+    });
+};
+
+export const createUser = async (userData) => {
+    return apiCall('/Auth/create-user', {
+        method: 'POST',
+        body: JSON.stringify(userData)
+    });
+};
+
+export const getUsers = async () => {
+    return apiCall('/Auth/users');
+};
+
+export const deleteUser = async (id) => {
+    return apiCall(`/Auth/users/${id}`, { method: 'DELETE' });
+};
+
 // ========== PRODUCTS ==========
 export const getProducts = async () => {
     return apiCall('/Product');
@@ -76,6 +106,16 @@ export const deleteProduct = async (id) => {
     });
 };
 
+// ========== MENU ==========
+export const getDishes = async () => apiCall('/Menu');
+
+export const createDish = async (dish) => apiCall('/Menu', { method: 'POST', body: JSON.stringify(dish) });
+
+export const updateDish = async (id, dish) => apiCall(`/Menu/${id}`, { method: 'PUT', body: JSON.stringify(dish) });
+
+export const deleteDish = async (id) => apiCall(`/Menu/${id}`, { method: 'DELETE' });
+
+// ========== WEEKLY SURVIVAL ==========
 export const getWeeklySurvival = async () => {
     return apiCall('/Product/weekly-check');
 };

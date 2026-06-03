@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
-import './Login.css';
+﻿import React, { useState } from 'react';
+import './styles/auth.css';
+import Register from './Register';
+import ForgotPassword from './ForgotPassword';
+import PasswordInput from './PasswordInput';
 
-function Login({ onLoginSuccess }) {
-  const [formData, setFormData] = useState({
-    username: '',
-    password: ''
-  });
+function Login({ onLoginSuccess, sessionExpired }) {
+  const [showRegister, setShowRegister] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [formData, setFormData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [registered, setRegistered] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -21,31 +24,36 @@ function Login({ onLoginSuccess }) {
     try {
       const response = await fetch('http://localhost:5148/api/Auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
 
-      if (!response.ok) {
-        throw new Error('שם משתמש או סיסמה שגויים');
-      }
+      if (!response.ok) throw new Error('שם משתמש או סיסמה שגויים');
 
       const data = await response.json();
-      
-      // שמור Token
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('username', formData.username);
-      
-      // הודע להורה שהתחברנו
+      sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('username', formData.username);
       onLoginSuccess();
-      
+
     } catch (err) {
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (showRegister) {
+    return (
+      <Register
+        onRegisterSuccess={() => { setShowRegister(false); setRegistered(true); }}
+        onBackToLogin={() => setShowRegister(false)}
+      />
+    );
+  }
+
+  if (showForgot) {
+    return <ForgotPassword onBack={() => setShowForgot(false)} />;
+  }
 
   return (
     <div className="login-container">
@@ -71,8 +79,7 @@ function Login({ onLoginSuccess }) {
 
           <div className="form-group">
             <label>סיסמה</label>
-            <input
-              type="password"
+            <PasswordInput
               name="password"
               value={formData.password}
               onChange={handleChange}
@@ -81,10 +88,20 @@ function Login({ onLoginSuccess }) {
             />
           </div>
 
-          {error && (
-            <div className="error-message">
-              ⚠️ {error}
+          {sessionExpired && (
+            <div className="error-message error-message--session">
+              פג תוקף החיבור — אנא התחבר מחדש
             </div>
+          )}
+
+          {registered && (
+            <div className="error-message error-message--success">
+              החשבון נוצר בהצלחה — אפשר להתחבר!
+            </div>
+          )}
+
+          {error && (
+            <div className="error-message">⚠️ {error}</div>
           )}
 
           <button type="submit" className="login-btn" disabled={isLoading}>
@@ -93,9 +110,16 @@ function Login({ onLoginSuccess }) {
         </form>
 
         <div className="login-footer">
-          <p>פרטי התחברות לבדיקה:</p>
-          <p style={{ fontSize: '0.9em', color: '#666' }}>
-            משתמש: <strong>nissim</strong> | סיסמה: <strong>Nissim123!</strong>
+          <p>
+            אין לך חשבון עדיין?{' '}
+            <span onClick={() => setShowRegister(true)} className="auth-link">
+              הירשם עכשיו
+            </span>
+          </p>
+          <p>
+            <span onClick={() => setShowForgot(true)} className="auth-link">
+              שכחתי סיסמה
+            </span>
           </p>
         </div>
       </div>
@@ -104,3 +128,4 @@ function Login({ onLoginSuccess }) {
 }
 
 export default Login;
+
