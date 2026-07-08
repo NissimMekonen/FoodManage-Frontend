@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import './styles/auth.css';
+import { AuthThemeToggle } from './Login';
 
-function ForgotPassword({ onBack }) {
+function ForgotPassword({ onBack, theme, toggleTheme }) {
   const [formData, setFormData] = useState({ username: '', email: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -28,9 +29,10 @@ function ForgotPassword({ onBack }) {
 
   return (
     <div className="login-container">
+      <AuthThemeToggle theme={theme} toggleTheme={toggleTheme} />
       <div className="login-box">
         <div className="login-header">
-          <h1>🍳 FoodManage</h1>
+          <h1>FoodManage</h1>
           <p>איפוס סיסמה</p>
         </div>
 

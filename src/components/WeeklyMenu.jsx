@@ -18,8 +18,7 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
   const [showSurvival, setShowSurvival] = useState(false);
   const [survivalData, setSurvivalData] = useState(null);
   const [loadingSurvival, setLoadingSurvival] = useState(false);
-  const [expandedDish, setExpandedDish] = useState(null);
-  const [recipeModal, setRecipeModal]   = useState(null);
+  const [dishModal, setDishModal] = useState(null);
   const [replacements, setReplacements] = useState({});
   const [loadingRepl, setLoadingRepl]   = useState({});
   const [showForm, setShowForm]         = useState(false);
@@ -97,7 +96,7 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
         try {
           await deleteDish(dish.id);
           setDishes(prev => prev.filter(d => d.id !== dish.id));
-          if (expandedDish?.id === dish.id) setExpandedDish(null);
+          if (dishModal?.id === dish.id) setDishModal(null);
         } catch {}
       }
     });
@@ -167,74 +166,23 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
                   <div className="wm-empty">אין מנות עדיין</div>
                 )}
 
-                {mealDishes.map(dish => {
-                  const isOpen = expandedDish?.id === dish.id;
-                  return (
-                    <div key={dish.id} className="wm-dish-card">
-                      <div className="wm-dish-card-header" onClick={() => { setExpandedDish(isOpen ? null : dish); setReplacements({}); }}>
-                        <span className="wm-dish-card-name">
-                          <i className="bi bi-star-fill"></i>{dish.name}
-                        </span>
-                        <div className="wm-dish-card-actions">
-                          {dish.recipe?.length > 0 && (
-                            <button className="wm-icon-btn wm-recipe-btn" onClick={(e) => { e.stopPropagation(); setRecipeModal(dish); }} title="אופן הכנה">
-                              <i className="bi bi-journal-text"></i>
-                            </button>
-                          )}
-                          {isAdmin && (
-                            <>
-                              <button className="wm-icon-btn" onClick={(e) => openEdit(dish, e)} title="עריכה"><i className="bi bi-pencil"></i></button>
-                              <button className="wm-icon-btn" onClick={(e) => handleDelete(dish, e)} title="מחיקה"><i className="bi bi-trash3"></i></button>
-                            </>
-                          )}
-                          <span className="wm-arrow"><i className={`bi bi-chevron-${isOpen ? 'up' : 'down'}`}></i></span>
-                        </div>
+                {mealDishes.map(dish => (
+                  <div key={dish.id} className="wm-dish-card">
+                    <div className="wm-dish-card-header" onClick={() => { setDishModal(dish); setReplacements({}); }}>
+                      <span className="wm-dish-card-name">
+                        <i className="bi bi-star-fill"></i>{dish.name}
+                      </span>
+                      <div className="wm-dish-card-actions">
+                        {isAdmin && (
+                          <>
+                            <button className="wm-icon-btn" onClick={(e) => openEdit(dish, e)} title="עריכה"><i className="bi bi-pencil"></i></button>
+                            <button className="wm-icon-btn" onClick={(e) => handleDelete(dish, e)} title="מחיקה"><i className="bi bi-trash3"></i></button>
+                          </>
+                        )}
                       </div>
-
-                      {isOpen && (
-                        <div className="wm-ingredients">
-                          {dish.ingredients.length === 0 ? (
-                            <div className="wm-empty">אין מרכיבים רשומים</div>
-                          ) : dish.ingredients.map((ing, i) => {
-                            const status = getStatus(ing);
-                            const hasIssue = status === 'out' || status === 'low';
-                            const replList = replacements[ing.name];
-                            return (
-                              <div key={i} className={`wm-ing wm-ing-${status}`}>
-                                <span className="wm-ing-icon">{STATUS_ICON[status]}</span>
-                                <span className="wm-ing-name">{ing.name}</span>
-                                <span className="wm-ing-amount">{ing.amount} {ing.unit}</span>
-                                {hasIssue && (
-                                  <button
-                                    className="wm-repl-btn"
-                                    onClick={() => handleSuggestReplacement(ing)}
-                                    disabled={loadingRepl[ing.name]}
-                                  >
-                                    {loadingRepl[ing.name] ? '...' : replList !== undefined ? 'סגור' : '💡 תחליף'}
-                                  </button>
-                                )}
-                                {replList !== undefined && (
-                                  <div className="wm-repl-list">
-                                    {replList.length === 0
-                                      ? <span className="wm-repl-none">לא נמצאו תחליפים זמינים</span>
-                                      : replList.map((alt, j) => (
-                                        <div key={j} className="wm-repl-item">
-                                          <span className="wm-repl-name">{alt.name}</span>
-                                          <span className="wm-repl-qty">במלאי: {alt.quantity}</span>
-                                          <span className="wm-repl-score">{Math.min(alt.matchScore || 0, 100)}% התאמה</span>
-                                        </div>
-                                      ))
-                                    }
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
 
                 {isAdmin && (
                   <button className="wm-add-dish-btn" onClick={() => openAdd(meal.key)}>
@@ -325,22 +273,77 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
         </div>
       )}
 
-      {/* מודאל הוראות הכנה */}
-      {recipeModal && (
-        <div className="modal-overlay" onClick={() => setRecipeModal(null)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
+      {/* מודאל פרטי מנה */}
+      {dishModal && (
+        <div className="modal-overlay" onClick={() => { setDishModal(null); setReplacements({}); }}>
+          <div className="modal-box modal-dish-detail" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3><i className="bi bi-journal-text"></i> אופן הכנה — {recipeModal.name}</h3>
-              <button className="wm-close-btn" onClick={() => setRecipeModal(null)}><i className="bi bi-x-lg"></i></button>
+              <h3><i className="bi bi-star-fill"></i> {dishModal.name}</h3>
+              <button className="wm-close-btn" onClick={() => { setDishModal(null); setReplacements({}); }}><i className="bi bi-x-lg"></i></button>
             </div>
-            <div className="wm-recipe-steps">
-              {recipeModal.recipe.map((step, i) => (
-                <div key={i} className="wm-recipe-step">
-                  <span className="wm-step-num">{i + 1}</span>
-                  <p className="wm-step-text">{step}</p>
+
+            {/* מרכיבים */}
+            {dishModal.ingredients?.length > 0 && (
+              <div className="wm-detail-section">
+                <div className="wm-detail-title"><i className="bi bi-basket2-fill"></i> מרכיבים</div>
+                <div className="wm-detail-ings">
+                  {dishModal.ingredients.map((ing, i) => {
+                    const status = getStatus(ing);
+                    const hasIssue = status === 'out' || status === 'low';
+                    const replList = replacements[ing.name];
+                    return (
+                      <div key={i} className={`wm-ing wm-ing-${status}`}>
+                        <span className="wm-ing-icon">{STATUS_ICON[status]}</span>
+                        <span className="wm-ing-name">{ing.name}</span>
+                        <span className="wm-ing-amount">{ing.amount} {ing.unit}</span>
+                        {hasIssue && (
+                          <button
+                            className="wm-repl-btn"
+                            onClick={() => handleSuggestReplacement(ing)}
+                            disabled={loadingRepl[ing.name]}
+                          >
+                            {loadingRepl[ing.name] ? '...' : replList !== undefined ? 'סגור' : '💡 תחליף'}
+                          </button>
+                        )}
+                        {replList !== undefined && (
+                          <div className="wm-repl-list">
+                            {replList.length === 0
+                              ? <span className="wm-repl-none">לא נמצאו תחליפים זמינים</span>
+                              : replList.map((alt, j) => (
+                                <div key={j} className="wm-repl-item">
+                                  <span className="wm-repl-name">{alt.name}</span>
+                                  <span className="wm-repl-qty">במלאי: {alt.quantity}</span>
+                                  <span className="wm-repl-score">{Math.min(alt.matchScore || 0, 100)}% התאמה</span>
+                                </div>
+                              ))
+                            }
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {/* אופן הכנה */}
+            {dishModal.recipe?.length > 0 && (
+              <div className="wm-detail-section">
+                <div className="wm-detail-title"><i className="bi bi-journal-text"></i> אופן הכנה</div>
+                <div className="wm-recipe-steps">
+                  {dishModal.recipe.map((step, i) => (
+                    <div key={i} className="wm-recipe-step">
+                      <span className="wm-step-num">{i + 1}</span>
+                      <p className="wm-step-text">{step}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {!dishModal.ingredients?.length && !dishModal.recipe?.length && (
+              <div className="wm-empty">אין פרטים רשומים למנה זו</div>
+            )}
           </div>
         </div>
       )}
@@ -348,7 +351,7 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
       {/* מודאל נשרוד את השבוע */}
       {showSurvival && (
         <div className="modal-overlay" onClick={() => setShowSurvival(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
+          <div className="modal-box modal-survival" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3><i className="bi bi-shield-check"></i> בדיקת שרידות שבועית</h3>
               <button className="wm-close-btn" onClick={() => setShowSurvival(false)}><i className="bi bi-x-lg"></i></button>

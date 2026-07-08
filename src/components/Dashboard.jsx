@@ -175,7 +175,6 @@ function Dashboard({ setCurrentScreen, lowStockCount, isAdmin, inventory = [], s
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
                       <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
                       <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-                      <Tooltip />
                       <Bar dataKey="מספר מנות" fill="#e9c176" radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>

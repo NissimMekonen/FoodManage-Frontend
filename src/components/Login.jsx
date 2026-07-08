@@ -4,7 +4,19 @@ import Register from './Register';
 import ForgotPassword from './ForgotPassword';
 import PasswordInput from './PasswordInput';
 
-function Login({ onLoginSuccess, sessionExpired }) {
+function AuthThemeToggle({ theme, toggleTheme }) {
+  if (!toggleTheme) return null;
+  const isLight = theme === 'light';
+  return (
+    <button className="auth-theme-btn" onClick={toggleTheme} title={isLight ? 'מצב כהה' : 'מצב בהיר'} style={{ position: 'fixed', top: 16, left: 16 }}>
+      <span className={`auth-theme-thumb${isLight ? ' auth-theme-thumb--right' : ''}`}>
+        <i className={`bi ${isLight ? 'bi-brightness-high-fill' : 'bi-moon-stars-fill'}`}></i>
+      </span>
+    </button>
+  );
+}
+
+function Login({ onLoginSuccess, sessionExpired, theme, toggleTheme }) {
   const [showRegister, setShowRegister] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
   const [formData, setFormData] = useState({ username: '', password: '' });
@@ -47,19 +59,22 @@ function Login({ onLoginSuccess, sessionExpired }) {
       <Register
         onRegisterSuccess={() => { setShowRegister(false); setRegistered(true); }}
         onBackToLogin={() => setShowRegister(false)}
+        theme={theme}
+        toggleTheme={toggleTheme}
       />
     );
   }
 
   if (showForgot) {
-    return <ForgotPassword onBack={() => setShowForgot(false)} />;
+    return <ForgotPassword onBack={() => setShowForgot(false)} theme={theme} toggleTheme={toggleTheme} />;
   }
 
   return (
     <div className="login-container">
+      <AuthThemeToggle theme={theme} toggleTheme={toggleTheme} />
       <div className="login-box">
         <div className="login-header">
-          <h1>🍳 FoodManage</h1>
+          <h1>FoodManage</h1>
           <p>מערכת ניהול מטבח מקצועית</p>
         </div>
 
@@ -127,5 +142,6 @@ function Login({ onLoginSuccess, sessionExpired }) {
   );
 }
 
+export { AuthThemeToggle };
 export default Login;
 

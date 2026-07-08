@@ -3,8 +3,9 @@ import './styles/auth.css';
 import { register } from '../api';
 import PasswordStrength, { validatePassword } from './PasswordStrength';
 import PasswordInput from './PasswordInput';
+import { AuthThemeToggle } from './Login';
 
-function Register({ onRegisterSuccess, onBackToLogin }) {
+function Register({ onRegisterSuccess, onBackToLogin, theme, toggleTheme }) {
   const [formData, setFormData] = useState({
     businessName: '',
     username: '',
@@ -47,9 +48,10 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
 
   return (
     <div className="login-container">
+      <AuthThemeToggle theme={theme} toggleTheme={toggleTheme} />
       <div className="login-box login-box--wide">
         <div className="login-header">
-          <h1>🍳 FoodManage</h1>
+          <h1>FoodManage</h1>
           <p>יצירת חשבון חדש</p>
         </div>
 

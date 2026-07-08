@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import './styles/auth.css';
 import PasswordStrength, { validatePassword } from './PasswordStrength';
 import PasswordInput from './PasswordInput';
+import { AuthThemeToggle } from './Login';
 
-function ResetPassword({ token, onDone }) {
+function ResetPassword({ token, onDone, theme, toggleTheme }) {
   const [formData, setFormData] = useState({ newPassword: '', confirmPassword: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -44,9 +45,10 @@ function ResetPassword({ token, onDone }) {
 
   return (
     <div className="login-container">
+      <AuthThemeToggle theme={theme} toggleTheme={toggleTheme} />
       <div className="login-box">
         <div className="login-header">
-          <h1>🍳 FoodManage</h1>
+          <h1>FoodManage</h1>
           <p>הגדרת סיסמה חדשה</p>
         </div>
 

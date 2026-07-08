@@ -18,9 +18,27 @@ html.light .sidebar {
   box-shadow: -4px 0 16px rgba(0, 0, 0, 0.08);
 }
 
+/* ── Brand ── */
+.sidebar-brand {
+  padding: 22px 20px 14px;
+  font-family: 'Libre Caslon Text', Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #e9c176;
+  letter-spacing: 0.01em;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(233, 193, 118, 0.12);
+  text-align: center;
+}
+
+html.light .sidebar-brand {
+  color: #7a5c1e;
+  border-bottom-color: rgba(197, 160, 89, 0.25);
+}
+
 /* ── Profile section ── */
 .sidebar-profile {
-  padding: 28px 20px 22px;
+  padding: 16px 20px 18px;
   border-bottom: 1px solid rgba(233, 193, 118, 0.15);
   flex-shrink: 0;
 }

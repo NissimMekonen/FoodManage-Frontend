@@ -17,8 +17,10 @@ function Sidebar({ currentScreen, navigate, handleLogout, isAdmin, lowStockCount
       {isOpen && <div className="sidebar-overlay" onClick={onClose} />}
       <aside className={`sidebar${isOpen ? ' open' : ''}`}>
 
+        <div className="sidebar-brand">FoodManage</div>
+
         <div className="sidebar-profile">
-          <div className="sidebar-profile-name">{username || 'FoodManage'}</div>
+          <div className="sidebar-profile-name">{username || '—'}</div>
           <div className="sidebar-profile-role">{businessName || (isAdmin ? 'מנהל מטבח' : 'צוות מטבח')}</div>
         </div>
 

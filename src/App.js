@@ -221,7 +221,7 @@ function App() {
   // ✅ בדוק אם יש reset token ב-URL
   const resetToken = new URLSearchParams(window.location.search).get('token');
   if (resetToken) {
-    return <ResetPassword token={resetToken} onDone={() => window.location.replace('/')} />;
+    return <ResetPassword token={resetToken} onDone={() => window.location.replace('/')} theme={theme} toggleTheme={toggleTheme} />;
   }
 
   // ✅ אם לא מחובר - הצג Login
@@ -231,7 +231,7 @@ function App() {
       setUserRole(getRoleFromToken(token));
       setIsLoggedIn(true);
       setSessionExpired(false);
-    }} sessionExpired={sessionExpired} />;
+    }} sessionExpired={sessionExpired} theme={theme} toggleTheme={toggleTheme} />;
   }
 
   // ✅ אם מחובר - הצג את המערכת
