@@ -13,6 +13,7 @@ function Suppliers({ suppliers, setSuppliers, inventory, showToast, isAdmin }) {
   const [activeOrderSupplier, setActiveOrderSupplier] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [orderText, setOrderText] = useState('');
+  const [showOrderText, setShowOrderText] = useState(false);
   const [confirm, setConfirm] = useState({ open: false, title: '', message: '', onConfirm: null });
 
   const handleSupplierChange = (e) => {
@@ -95,6 +96,7 @@ function Suppliers({ suppliers, setSuppliers, inventory, showToast, isAdmin }) {
   );
 
   useEffect(() => {
+    setShowOrderText(false);
     if (!activeOrderSupplier) { setOrderText(''); return; }
     const supplierObj = suppliers.find(s => s.id === activeOrderSupplier);
     const missing = inventory.filter(item =>
@@ -114,6 +116,15 @@ function Suppliers({ suppliers, setSuppliers, inventory, showToast, isAdmin }) {
   const copyOrderToClipboard = () => {
     navigator.clipboard.writeText(orderText);
     showToast('ההזמנה הועתקה ללוח!', 'success');
+  };
+
+  const sendWhatsApp = () => {
+    const supplierObj = suppliers.find(s => s.id === activeOrderSupplier);
+    if (!supplierObj?.phone) return;
+    const phone = supplierObj.phone.replace(/[\s\-()]/g, '');
+    const intlPhone = phone.startsWith('0') ? '972' + phone.slice(1) : phone.replace('+', '');
+    const url = `https://wa.me/${intlPhone}?text=${encodeURIComponent(orderText)}`;
+    window.open(url, '_blank');
   };
 
   return (
@@ -220,17 +231,31 @@ function Suppliers({ suppliers, setSuppliers, inventory, showToast, isAdmin }) {
                 </div>
                 
                 {orderText && (
-                  <div className="order-text-box">
-                    <button className="order-copy-btn" onClick={copyOrderToClipboard} title="העתק">
-                      <i className="bi bi-copy"></i>
-                    </button>
-                    <textarea
-                      className="order-textarea"
-                      value={orderText}
-                      onChange={(e) => setOrderText(e.target.value)}
-                      rows={8}
-                    />
-                  </div>
+                  <>
+                    <div className="order-actions-row">
+                      <button className="order-action-btn order-action-btn--copy" onClick={() => setShowOrderText(v => !v)}>
+                        <i className="bi bi-envelope-paper"></i>
+                        הכן הודעה לספק
+                      </button>
+                      <button className="order-action-btn order-action-btn--whatsapp" onClick={sendWhatsApp}>
+                        <i className="bi bi-whatsapp"></i>
+                        שלח בוואטסאפ
+                      </button>
+                    </div>
+                    {showOrderText && (
+                      <div className="order-text-box">
+                        <button className="order-copy-btn" onClick={copyOrderToClipboard} title="העתק">
+                          <i className="bi bi-copy"></i>
+                        </button>
+                        <textarea
+                          className="order-textarea"
+                          value={orderText}
+                          onChange={(e) => setOrderText(e.target.value)}
+                          rows={7}
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ) : (

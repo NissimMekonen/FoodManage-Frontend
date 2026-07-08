@@ -2,23 +2,24 @@ import React from 'react';
 import './styles/sidebar.css';
 
 const NAV_ITEMS = [
-  { key: 'dashboard', label: 'לוח הבקרה',    icon: 'bi-house-door-fill' },
-  { key: 'inventory', label: 'ניהול מלאי',    icon: 'bi-box-seam-fill' },
-  { key: 'suppliers', label: 'ספקים',          icon: 'bi-truck' },
-  { key: 'menu',      label: 'תפריט שבועי',   icon: 'bi-journal-richtext' },
-  { key: 'team',      label: 'ניהול צוות',    icon: 'bi-people-fill', adminOnly: true },
+  { key: 'dashboard', label: 'לוח הבקרה',   icon: 'bi-grid-fill' },
+  { key: 'inventory', label: 'ניהול מלאי',   icon: 'bi-box-seam-fill' },
+  { key: 'suppliers', label: 'ספקים',         icon: 'bi-truck' },
+  { key: 'menu',      label: 'תפריט שבועי',  icon: 'bi-journal-richtext' },
+  { key: 'team',      label: 'ניהול צוות',   icon: 'bi-people-fill', adminOnly: true },
 ];
 
-function Sidebar({ currentScreen, navigate, handleLogout, isAdmin, lowStockCount, setShowChangePassword, isOpen, onClose }) {
+function Sidebar({ currentScreen, navigate, handleLogout, isAdmin, lowStockCount, setShowChangePassword, isOpen, onClose, businessName }) {
   const username = sessionStorage.getItem('username');
 
   return (
     <>
       {isOpen && <div className="sidebar-overlay" onClick={onClose} />}
       <aside className={`sidebar${isOpen ? ' open' : ''}`}>
-        <div className="sidebar-logo">
-          <span>🍳</span>
-          <span>FoodManage</span>
+
+        <div className="sidebar-profile">
+          <div className="sidebar-profile-name">{username || 'FoodManage'}</div>
+          <div className="sidebar-profile-role">{businessName || (isAdmin ? 'מנהל מטבח' : 'צוות מטבח')}</div>
         </div>
 
         <nav className="sidebar-nav">
@@ -52,6 +53,7 @@ function Sidebar({ currentScreen, navigate, handleLogout, isAdmin, lowStockCount
             <i className="bi bi-box-arrow-right"></i>
           </button>
         </div>
+
       </aside>
     </>
   );

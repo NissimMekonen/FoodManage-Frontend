@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './styles/inventory.css';
 import { createProduct, updateProduct, deleteProduct } from '../api';
 import ConfirmModal from './ConfirmModal';
@@ -18,6 +18,7 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToa
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [bulkInputs, setBulkInputs] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [confirm, setConfirm] = useState({ open: false, title: '', message: '', onConfirm: null });
   const [formData, setFormData] = useState({
     name: '',
@@ -25,16 +26,16 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToa
     unit: "ק''ג",
     minQuantity: '',
     category: 'dairy',
-    supplierId: ''
+    supplierId: '',
+    expiryDate: ''
   });
 
-  // ✅ עדכן ספק ברירת מחדל כשהספקים נטענים
   useEffect(() => {
     if (suppliers.length > 0 && !formData.supplierId) {
       setFormData(prev => ({ ...prev, supplierId: String(suppliers[0].id) }));
     }
   }, [suppliers]);
-  
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -42,19 +43,18 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToa
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
-      // ✅ שלח ל-Backend
       const newProduct = await createProduct({
         name: formData.name,
         category: formData.category,
         quantity: parseFloat(formData.quantity),
-        expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+        expiryDate: formData.expiryDate
+          ? new Date(formData.expiryDate).toISOString()
+          : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
         alertBeforeDays: parseFloat(formData.minQuantity) || 5,
         supplierId: formData.supplierId || null
       });
 
-      // ✅ הוסף ל-State
       const newItem = {
         id: newProduct.id,
         name: newProduct.name,
@@ -62,12 +62,14 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToa
         unit: formData.unit,
         minQuantity: parseFloat(formData.minQuantity) || 5,
         category: newProduct.category,
-        supplierId: formData.supplierId
+        supplierId: formData.supplierId,
+        expiryDate: newProduct.expiryDate ?? null
       };
 
       setInventory([...inventory, newItem]);
-      setFormData({ ...formData, name: '', quantity: '', minQuantity: '' });
+      setFormData({ ...formData, name: '', quantity: '', minQuantity: '', expiryDate: '' });
       showToast('המוצר נוסף בהצלחה!', 'success');
+      setShowAddModal(false);
     } catch (err) {
       console.error('Error creating product:', err);
       showToast('שגיאה בהוספת מוצר: ' + err.message, 'error');
@@ -113,123 +115,24 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToa
   });
 
   return (
-    <div className="main-layout animate-fade-in">
-      {/* צד ימין: טופס הוספה - רק למנהל */}
-      {!isAdmin && (
-        <section className="form-section readonly-section">
-          <div className="readonly-content">
-            <div className="readonly-emoji">👀</div>
-            <h3>מצב צפייה בלבד</h3>
-            <p>אין לך הרשאה לשנות את המלאי</p>
-          </div>
-        </section>
-      )}
-      {isAdmin && (<section className="form-section">
-        <h2>הוספת חומר גלם חדש</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>שם הפריט *</label>
-            <input 
-              type="text" 
-              name="name" 
-              value={formData.name} 
-              onChange={handleChange} 
-              placeholder="למשל: חומוס גרגירים" 
-              required 
-              disabled={isLoading}
-            />
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label>כמות נוכחית *</label>
-              <input 
-                type="number" 
-                step="0.01" 
-                name="quantity" 
-                value={formData.quantity} 
-                onChange={handleChange} 
-                required 
-                disabled={isLoading}
-              />
-            </div>
-            <div className="form-group">
-              <label>יחידת מידה</label>
-              <select 
-                name="unit" 
-                value={formData.unit} 
-                onChange={handleChange}
-                disabled={isLoading}
-              >
-                <option value="ק''ג">ק"ג</option>
-                <option value="ליטר">ליטר</option>
-                <option value="יחידות">יחידות</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label>קטגוריית מוצר</label>
-              <select 
-                name="category" 
-                value={formData.category} 
-                onChange={handleChange}
-                disabled={isLoading}
-              >
-                {CATEGORIES.filter(cat => cat.id !== 'all').map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label>ספק ברירת מחדל</label>
-              <select 
-                name="supplierId" 
-                value={formData.supplierId} 
-                onChange={handleChange}
-                disabled={isLoading}
-              >
-                {suppliers.map(sup => (
-                  <option key={sup.id} value={sup.id}>{sup.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>מלאי מינימום להתראה *</label>
-            <input 
-              type="number" 
-              step="0.01" 
-              name="minQuantity" 
-              value={formData.minQuantity} 
-              onChange={handleChange} 
-              required 
-              disabled={isLoading}
-            />
-          </div>
-
-          <button type="submit" className="submit-btn" disabled={isLoading}>
-            {isLoading ? 'מוסיף...' : 'הוסף למזווה'}
-          </button>
-        </form>
-      </section>
-      )}
-
-      {/* צד שמאל: טבלה */}
-      <section className="table-section">
+    <div className="inventory-page animate-fade-in">
+      <section className="table-section inventory-full">
         <div className="table-header-container">
           <h2>המזווה שלך (חומרי גלם)</h2>
+          {isAdmin && (
+            <button className="add-ingredient-btn" onClick={() => setShowAddModal(true)}>
+              <i className="bi bi-plus-lg"></i>
+              הוספת חומר גלם חדש
+            </button>
+          )}
           <div className="search-container">
             <span className="search-icon">🔍</span>
-            <input 
-              type="text" 
-              className="modern-search-input" 
-              placeholder="חפש חומר גלם..." 
-              value={searchTerm} 
-              onChange={(e) => setSearchTerm(e.target.value)} 
+            <input
+              type="text"
+              className="modern-search-input"
+              placeholder="חפש חומר גלם..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
             {searchTerm && <button className="clear-search-btn" onClick={() => setSearchTerm('')}>✕</button>}
           </div>
@@ -237,9 +140,9 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToa
 
         <div className="categories-filter-bar">
           {CATEGORIES.map(cat => (
-            <button 
-              key={cat.id} 
-              className={`category-tab-btn ${selectedCategory === cat.id ? 'active' : ''}`} 
+            <button
+              key={cat.id}
+              className={`category-tab-btn ${selectedCategory === cat.id ? 'active' : ''}`}
               onClick={() => setSelectedCategory(cat.id)}
             >
               {cat.name}
@@ -257,6 +160,7 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToa
                 <th>כמות במלאי</th>
                 <th>מינימום</th>
                 <th>סטטוס</th>
+                <th>תאריך תפוגה</th>
                 <th>עדכון מהיר</th>
                 <th>עדכון מרוכז</th>
                 <th>פעולות</th>
@@ -268,7 +172,11 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToa
                   const isLowStock = item.quantity <= item.minQuantity;
                   const catName = CATEGORIES.find(c => c.id === item.category)?.name || 'אחר';
                   const supName = suppliers.find(s => String(s.id) === String(item.supplierId))?.name || 'ללא ספק';
-                  
+                  const today = new Date(); today.setHours(0,0,0,0);
+                  const expiry = item.expiryDate ? new Date(item.expiryDate) : null;
+                  const daysLeft = expiry ? Math.ceil((expiry - today) / (1000 * 60 * 60 * 24)) : null;
+                  const isExpired = daysLeft !== null && daysLeft < 0;
+                  const isSoonExpiry = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7;
                   return (
                     <tr key={item.id} className={isLowStock ? "low-stock-row" : ""}>
                       <td><strong>{item.name}</strong></td>
@@ -280,6 +188,17 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToa
                         <span className={`badge ${isLowStock ? "danger" : "success"}`}>
                           {isLowStock ? "חסר!" : "תקין"}
                         </span>
+                      </td>
+                      <td>
+                        {expiry ? (
+                          <span className={`expiry-badge ${isExpired ? 'expiry-expired' : isSoonExpiry ? 'expiry-soon' : 'expiry-ok'}`}>
+                            {isExpired
+                              ? `פג לפני ${Math.abs(daysLeft)} יום`
+                              : isSoonExpiry
+                              ? `עוד ${daysLeft} יום`
+                              : expiry.toLocaleDateString('he-IL')}
+                          </span>
+                        ) : <span className="expiry-none">—</span>}
                       </td>
                       {isAdmin ? (
                         <>
@@ -307,18 +226,110 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToa
                           </td>
                         </>
                       ) : (
-                        <td colSpan="3" className="td-view-only">צפייה בלבד</td>
+                        <td colSpan="4" className="td-view-only">צפייה בלבד</td>
                       )}
                     </tr>
                   );
                 })
               ) : (
-                <tr><td colSpan="8" className="td-empty">לא נמצאו חומרי גלם מתאימים</td></tr>
+                <tr><td colSpan="10" className="td-empty">לא נמצאו חומרי גלם מתאימים</td></tr>
               )}
             </tbody>
           </table>
         </div>
       </section>
+
+      {showAddModal && (
+        <div className="add-modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div className="add-modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="add-modal-header">
+              <h2>הוספת חומר גלם חדש</h2>
+              <button className="add-modal-close" onClick={() => setShowAddModal(false)}>✕</button>
+            </div>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>שם הפריט *</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="למשל: חומוס גרגירים"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>כמות נוכחית *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    name="quantity"
+                    value={formData.quantity}
+                    onChange={handleChange}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>יחידת מידה</label>
+                  <select name="unit" value={formData.unit} onChange={handleChange} disabled={isLoading}>
+                    <option value="ק''ג">ק"ג</option>
+                    <option value="ליטר">ליטר</option>
+                    <option value="יחידות">יחידות</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>קטגוריית מוצר</label>
+                  <select name="category" value={formData.category} onChange={handleChange} disabled={isLoading}>
+                    {CATEGORIES.filter(cat => cat.id !== 'all').map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>ספק ברירת מחדל</label>
+                  <select name="supplierId" value={formData.supplierId} onChange={handleChange} disabled={isLoading}>
+                    {suppliers.map(sup => (
+                      <option key={sup.id} value={sup.id}>{sup.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>מלאי מינימום להתראה *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    name="minQuantity"
+                    value={formData.minQuantity}
+                    onChange={handleChange}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>תאריך תפוגה</label>
+                  <input
+                    type="date"
+                    name="expiryDate"
+                    value={formData.expiryDate}
+                    onChange={handleChange}
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+              <button type="submit" className="submit-btn" disabled={isLoading}>
+                {isLoading ? 'מוסיף...' : 'הוסף למזווה'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       <ConfirmModal
         isOpen={confirm.open}

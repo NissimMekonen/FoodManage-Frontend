@@ -35,12 +35,21 @@ const getRoleFromToken = (token) => {
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState('Employee');
+  const [theme, setTheme] = useState(() => localStorage.getItem('fm_theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('light', theme === 'light');
+    localStorage.setItem('fm_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
   const [currentScreen, setCurrentScreen] = useState(
     () => window.history.state?.screen || 'dashboard'
   );
   const [inventory, setInventory] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [dishes, setDishes] = useState([]);
+  const [businessName, setBusinessName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -100,9 +109,27 @@ function App() {
     if (isLoggedIn) {
       loadProducts();
       loadSuppliers();
+      loadBusinessName();
       getDishes().then(setDishes).catch(() => {});
     }
   }, [isLoggedIn]);
+
+  const loadBusinessName = async () => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      const businessId = payload.businessId;
+      if (!businessId) return;
+      const res = await fetch('http://localhost:5148/api/Business', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const list = await res.json();
+        const biz = list.find(b => b.id === businessId);
+        if (biz) setBusinessName(biz.name);
+      }
+    } catch {}
+  };
 
   const loadSuppliers = async () => {
     try {
@@ -138,7 +165,8 @@ function App() {
         unit: "ק''ג",
         minQuantity: p.alertBeforeDays ?? 5,
         category: p.category || 'other',
-        supplierId: p.supplierId ?? null
+        supplierId: p.supplierId ?? null,
+        expiryDate: p.expiryDate ?? null
       }));
       
       setInventory(formattedProducts);
@@ -215,7 +243,13 @@ function App() {
     );
   }
 
-  const lowStockCount = inventory.filter(i => i.quantity <= i.minQuantity).length;
+  const _today = new Date(); _today.setHours(0, 0, 0, 0);
+  const lowStockCount = inventory.filter(i => {
+    if (i.quantity <= i.minQuantity) return true;
+    if (!i.expiryDate) return false;
+    const daysLeft = Math.ceil((new Date(i.expiryDate) - _today) / 86400000);
+    return daysLeft <= i.minQuantity;
+  }).length;
 
   return (
     <div className="app-layout">
@@ -228,6 +262,9 @@ function App() {
         setShowChangePassword={setShowChangePassword}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        businessName={businessName}
+        theme={theme}
+        toggleTheme={toggleTheme}
       />
 
       <div className="app-main">
@@ -237,6 +274,14 @@ function App() {
               <i className="bi bi-list"></i>
             </button>
             <h1>{SCREEN_LABELS[currentScreen]}</h1>
+            {currentScreen === 'dashboard' && (
+              <span className="header-welcome">ברוך הבא למטבח שלך 👋</span>
+            )}
+            <button className="theme-toggle-pill" onClick={toggleTheme} title={theme === 'dark' ? 'מצב בהיר' : 'מצב כהה'}>
+              <span className="theme-toggle-thumb">
+                <i className={`bi ${theme === 'dark' ? 'bi-moon-stars-fill' : 'bi-brightness-high-fill'}`}></i>
+              </span>
+            </button>
           </div>
         </header>
 

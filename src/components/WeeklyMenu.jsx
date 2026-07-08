@@ -4,9 +4,9 @@ import { getDishes, createDish, updateDish, deleteDish, getWeeklySurvival, sugge
 import ConfirmModal from './ConfirmModal';
 
 const MEALS = [
-  { key: 'breakfast', label: 'ארוחת בוקר',   icon: '🌅', color: '#f59e0b', headerBg: '#fffbeb', headerColor: '#b45309' },
-  { key: 'lunch',     label: 'ארוחת צהריים', icon: '☀️', color: '#3b82f6', headerBg: '#eff6ff', headerColor: '#1d4ed8' },
-  { key: 'dinner',    label: 'ארוחת ערב',    icon: '🌙', color: '#2c3e50', headerBg: '#f8fafc', headerColor: '#0f172a' },
+  { key: 'breakfast', label: 'ארוחת בוקר',   icon: 'bi-sunrise-fill',   cssClass: 'meal-breakfast' },
+  { key: 'lunch',     label: 'ארוחת צהריים', icon: 'bi-sun-fill',        cssClass: 'meal-lunch'     },
+  { key: 'dinner',    label: 'ארוחת ערב',    icon: 'bi-moon-stars-fill', cssClass: 'meal-dinner'    },
 ];
 
 const UNITS = ["ק\"ג", 'גרם', 'ליטר', "מ\"ל", "יח'", 'כוס', 'כף', 'כפית'];
@@ -143,7 +143,7 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
       <div className="wm-header">
         <h2 className="wm-title">תפריט המטבח 🍽️</h2>
         <button className="survival-btn" onClick={handleSurvivalCheck}>
-          🔍 נשרוד את השבוע?
+          <i className="bi bi-shield-check"></i> נשרוד את השבוע?
         </button>
       </div>
 
@@ -152,11 +152,11 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
         {MEALS.map(meal => {
           const mealDishes = dishes.filter(d => d.mealType === meal.key);
           return (
-            <div key={meal.key} className="wm-column">
+            <div key={meal.key} className={`wm-column ${meal.cssClass}`}>
               {/* כותרת עמודה */}
-              <div className="wm-col-header" style={{ borderTopColor: meal.color, backgroundColor: meal.headerBg }}>
-                <span className="wm-col-title" style={{ color: meal.headerColor }}>
-                  {meal.icon} {meal.label}
+              <div className="wm-col-header">
+                <span className="wm-col-title">
+                  <i className={`bi ${meal.icon}`}></i> {meal.label}
                 </span>
                 <span className="wm-col-count">{mealDishes.length} מנות</span>
               </div>
@@ -172,18 +172,22 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
                   return (
                     <div key={dish.id} className="wm-dish-card">
                       <div className="wm-dish-card-header" onClick={() => { setExpandedDish(isOpen ? null : dish); setReplacements({}); }}>
-                        <span className="wm-dish-card-name">🍽️ {dish.name}</span>
+                        <span className="wm-dish-card-name">
+                          <i className="bi bi-star-fill"></i>{dish.name}
+                        </span>
                         <div className="wm-dish-card-actions">
                           {dish.recipe?.length > 0 && (
-                            <button className="wm-icon-btn wm-recipe-btn" onClick={(e) => { e.stopPropagation(); setRecipeModal(dish); }} title="אופן הכנה">📋</button>
+                            <button className="wm-icon-btn wm-recipe-btn" onClick={(e) => { e.stopPropagation(); setRecipeModal(dish); }} title="אופן הכנה">
+                              <i className="bi bi-journal-text"></i>
+                            </button>
                           )}
                           {isAdmin && (
                             <>
-                              <button className="wm-icon-btn" onClick={(e) => openEdit(dish, e)} title="עריכה">✏️</button>
-                              <button className="wm-icon-btn" onClick={(e) => handleDelete(dish, e)} title="מחיקה">🗑️</button>
+                              <button className="wm-icon-btn" onClick={(e) => openEdit(dish, e)} title="עריכה"><i className="bi bi-pencil"></i></button>
+                              <button className="wm-icon-btn" onClick={(e) => handleDelete(dish, e)} title="מחיקה"><i className="bi bi-trash3"></i></button>
                             </>
                           )}
-                          <span className="wm-arrow">{isOpen ? '▲' : '▼'}</span>
+                          <span className="wm-arrow"><i className={`bi bi-chevron-${isOpen ? 'up' : 'down'}`}></i></span>
                         </div>
                       </div>
 
@@ -234,7 +238,7 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
 
                 {isAdmin && (
                   <button className="wm-add-dish-btn" onClick={() => openAdd(meal.key)}>
-                    + הוסף מנה
+                    <i className="bi bi-plus-lg"></i> הוסף מנה
                   </button>
                 )}
               </div>
@@ -249,7 +253,7 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
           <div className="modal-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{editingDish ? 'עריכת מנה' : `הוספת מנה — ${MEALS.find(m => m.key === formMeal)?.label}`}</h3>
-              <button className="wm-close-btn" onClick={() => setShowForm(false)}>✕</button>
+              <button className="wm-close-btn" onClick={() => setShowForm(false)}><i className="bi bi-x-lg"></i></button>
             </div>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
@@ -289,7 +293,7 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
                     }>✕</button>
                   </div>
                 ))}
-                <button type="button" className="add-ing-btn" onClick={addIngRow}>+ הוסף מרכיב</button>
+                <button type="button" className="add-ing-btn" onClick={addIngRow}><i className="bi bi-plus-lg"></i> הוסף מרכיב</button>
               </div>
 
               <div className="form-group">
@@ -310,7 +314,7 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
                 ))}
                 <button type="button" className="add-ing-btn" onClick={() =>
                   setDishForm(p => ({ ...p, recipe: [...p.recipe, ''] }))
-                }>+ הוסף שלב</button>
+                }><i className="bi bi-plus-lg"></i> הוסף שלב</button>
               </div>
 
               <button type="submit" className="submit-btn" disabled={isSubmitting}>
@@ -326,8 +330,8 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
         <div className="modal-overlay" onClick={() => setRecipeModal(null)}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>📋 אופן הכנה — {recipeModal.name}</h3>
-              <button className="wm-close-btn" onClick={() => setRecipeModal(null)}>✕</button>
+              <h3><i className="bi bi-journal-text"></i> אופן הכנה — {recipeModal.name}</h3>
+              <button className="wm-close-btn" onClick={() => setRecipeModal(null)}><i className="bi bi-x-lg"></i></button>
             </div>
             <div className="wm-recipe-steps">
               {recipeModal.recipe.map((step, i) => (
@@ -346,8 +350,8 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
         <div className="modal-overlay" onClick={() => setShowSurvival(false)}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>🔍 בדיקת שרידות שבועית</h3>
-              <button className="wm-close-btn" onClick={() => setShowSurvival(false)}>✕</button>
+              <h3><i className="bi bi-shield-check"></i> בדיקת שרידות שבועית</h3>
+              <button className="wm-close-btn" onClick={() => setShowSurvival(false)}><i className="bi bi-x-lg"></i></button>
             </div>
             {loadingSurvival ? (
               <div className="wm-loading">בודק מלאי...</div>
