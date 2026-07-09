@@ -1,70 +1,79 @@
-# Getting Started with Create React App
+# FoodManage – Frontend 🍽️
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern React frontend for **FoodManage** – a full-stack restaurant management system that helps restaurants manage inventory, suppliers, purchase orders, and weekly menus in one place.
 
-## Available Scripts
+> 🔗 **Backend repository:** [FoodManage-Backend](https://github.com/NissimMekonen/FoodManage-Backend)
 
-In the project directory, you can run:
+## ✨ Features
 
-### `npm start`
+- 🔐 **Authentication** – Login, registration, and password reset via email (JWT-based)
+- 📦 **Inventory Management** – Track raw materials with quantities, categories, and expiry dates
+- ⚠️ **Low-Stock Alerts** – Automatic visual alerts when items fall below minimum stock
+- 🤝 **Supplier Management** – Full CRUD for suppliers with contact details
+- 📋 **Smart Purchase Orders** – Auto-generate WhatsApp-ready order messages per supplier based on missing stock
+- 📅 **Weekly Menu** – Plan dishes linked to live inventory, with availability status
+- 👥 **Team Management** – Manage employees and permissions
+- 🎨 **Modern RTL UI** – Clean Hebrew interface with responsive design
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 🛠️ Tech Stack
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+| Technology | Purpose |
+|------------|---------|
+| React 19 | UI framework |
+| JavaScript (ES6+) | Language |
+| CSS3 | Styling (custom, component-scoped) |
+| Fetch API | HTTP communication with backend |
+| JWT | Token-based authentication |
 
-### `npm test`
+## 🚀 Getting Started
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Prerequisites
 
-### `npm run build`
+- [Node.js](https://nodejs.org/) (v18+)
+- The [FoodManage Backend](https://github.com/NissimMekonen/FoodManage-Backend) running on `http://localhost:5148`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Installation
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+# Clone the repository
+git clone https://github.com/NissimMekonen/FoodManage-Frontend.git
+cd FoodManage-Frontend
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# Install dependencies
+npm install
 
-### `npm run eject`
+# Start the development server
+npm start
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+The app will open at [http://localhost:3000](http://localhost:3000).
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 📁 Project Structure
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+src/
+├── components/
+│   ├── Login.jsx            # Authentication screens
+│   ├── Register.jsx
+│   ├── ForgotPassword.jsx
+│   ├── ResetPassword.jsx
+│   ├── Dashboard.jsx        # Main dashboard with statistics
+│   ├── Inventory.jsx        # Inventory management
+│   ├── Suppliers.jsx        # Suppliers & purchase orders
+│   ├── WeeklyMenu.jsx       # Weekly menu planning
+│   ├── TeamManagement.jsx   # Employee management
+│   ├── Sidebar.jsx          # Navigation
+│   └── styles/              # Component CSS files
+├── api.js                   # Centralized API layer
+├── App.js                   # Main app & routing logic
+└── index.js                 # Entry point
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 👨‍💻 Developers
 
-## Learn More
+Developed as a final project at ORT Hermelin College by a two-developer team:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- **Nissim Mekonen** – Backend development, API integration, frontend features
+- **Guy** ([Guyemini](https://github.com/Guyemini)) – Frontend architecture & UI
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 📄 License & Vision
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project was initially developed as a final project at ORT Hermelin College, with plans to evolve into a commercial product for real-world restaurant management.
