@@ -32,6 +32,24 @@ const getRoleFromToken = (token) => {
   }
 };
 
+let _autoLogoutTimer = null;
+
+const scheduleAutoLogout = (token) => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (!payload.exp) return;
+    const msUntilExpiry = payload.exp * 1000 - Date.now();
+    if (msUntilExpiry <= 0) {
+      window.dispatchEvent(new Event('auth-expired'));
+      return;
+    }
+    clearTimeout(_autoLogoutTimer);
+    _autoLogoutTimer = setTimeout(() => {
+      window.dispatchEvent(new Event('auth-expired'));
+    }, Math.min(msUntilExpiry, 2147483647));
+  } catch {}
+};
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState('Employee');
@@ -82,12 +100,13 @@ function App() {
 
   const currentUsername = sessionStorage.getItem('username') || '';
 
-  // ✅ בדוק אם יש Token בהתחלה
+  // ✅ בדוק אם יש Token בהתחלה + הגדר טיימר התנתקות אוטומטית
   useEffect(() => {
     const token = sessionStorage.getItem('token');
     if (token) {
       setIsLoggedIn(true);
       setUserRole(getRoleFromToken(token));
+      scheduleAutoLogout(token);
     }
   }, []);
 
@@ -211,6 +230,7 @@ function App() {
   };
 
   const handleLogout = () => {
+    clearTimeout(_autoLogoutTimer);
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('username');
     setIsLoggedIn(false);
@@ -231,7 +251,7 @@ function App() {
       setUserRole(getRoleFromToken(token));
       setIsLoggedIn(true);
       setSessionExpired(false);
-    }} sessionExpired={sessionExpired} theme={theme} toggleTheme={toggleTheme} />;
+    }} onTokenReceived={scheduleAutoLogout} sessionExpired={sessionExpired} theme={theme} toggleTheme={toggleTheme} />;
   }
 
   // ✅ אם מחובר - הצג את המערכת

@@ -16,7 +16,7 @@ function AuthThemeToggle({ theme, toggleTheme }) {
   );
 }
 
-function Login({ onLoginSuccess, sessionExpired, theme, toggleTheme }) {
+function Login({ onLoginSuccess, onTokenReceived, sessionExpired, theme, toggleTheme }) {
   const [showRegister, setShowRegister] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
   const [formData, setFormData] = useState({ username: '', password: '' });
@@ -45,6 +45,7 @@ function Login({ onLoginSuccess, sessionExpired, theme, toggleTheme }) {
       const data = await response.json();
       sessionStorage.setItem('token', data.token);
       sessionStorage.setItem('username', formData.username);
+      onTokenReceived?.(data.token);
       onLoginSuccess();
 
     } catch (err) {
