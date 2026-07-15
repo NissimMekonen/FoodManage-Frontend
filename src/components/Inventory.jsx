@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './styles/inventory.css';
-import { createProduct, updateProduct, deleteProduct } from '../api';
+import { createProduct, deleteProduct } from '../api';
+import { findSupplierForCategory } from '../utils/assignSuppliers';
 import ConfirmModal from './ConfirmModal';
 
 const CATEGORIES = [
@@ -13,7 +14,7 @@ const CATEGORIES = [
   { id: 'other', name: 'אחר' }
 ];
 
-function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToast, isAdmin }) {
+function Inventory({ inventory, setInventory, suppliers, updateQuantity, updateProductSupplier, showToast, isAdmin }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [bulkInputs, setBulkInputs] = useState({});
@@ -32,9 +33,22 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToa
 
   useEffect(() => {
     if (suppliers.length > 0 && !formData.supplierId) {
-      setFormData(prev => ({ ...prev, supplierId: String(suppliers[0].id) }));
+      const preferred = findSupplierForCategory(suppliers, formData.category);
+      setFormData(prev => ({
+        ...prev,
+        supplierId: String(preferred?.id || suppliers[0].id)
+      }));
     }
   }, [suppliers]);
+
+  // כשמשנים קטגוריה בטופס — עדכן ספק מומלץ
+  useEffect(() => {
+    if (suppliers.length === 0) return;
+    const preferred = findSupplierForCategory(suppliers, formData.category);
+    if (preferred) {
+      setFormData(prev => ({ ...prev, supplierId: String(preferred.id) }));
+    }
+  }, [formData.category, suppliers]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -171,7 +185,6 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToa
                 filteredInventory.map((item) => {
                   const isLowStock = item.quantity <= item.minQuantity;
                   const catName = CATEGORIES.find(c => c.id === item.category)?.name || 'אחר';
-                  const supName = suppliers.find(s => String(s.id) === String(item.supplierId))?.name || 'ללא ספק';
                   const today = new Date(); today.setHours(0,0,0,0);
                   const expiry = item.expiryDate ? new Date(item.expiryDate) : null;
                   const daysLeft = expiry ? Math.ceil((expiry - today) / (1000 * 60 * 60 * 24)) : null;
@@ -181,7 +194,24 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToa
                     <tr key={item.id} className={isLowStock ? "low-stock-row" : ""}>
                       <td><strong>{item.name}</strong></td>
                       <td><span className="table-category-tag">{catName}</span></td>
-                      <td><span className="table-supplier-tag">{supName}</span></td>
+                      <td>
+                        {isAdmin && updateProductSupplier ? (
+                          <select
+                            className="table-supplier-select"
+                            value={item.supplierId ? String(item.supplierId) : ''}
+                            onChange={(e) => updateProductSupplier(item.id, e.target.value || null)}
+                          >
+                            <option value="">ללא ספק</option>
+                            {suppliers.map(s => (
+                              <option key={s.id} value={String(s.id)}>{s.name}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="table-supplier-tag">
+                            {suppliers.find(s => String(s.id) === String(item.supplierId))?.name || 'ללא ספק'}
+                          </span>
+                        )}
+                      </td>
                       <td>{item.quantity} {item.unit}</td>
                       <td>{item.minQuantity} {item.unit}</td>
                       <td>
@@ -291,8 +321,9 @@ function Inventory({ inventory, setInventory, suppliers, updateQuantity, showToa
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>ספק ברירת מחדל</label>
+                  <label>ספק משויך</label>
                   <select name="supplierId" value={formData.supplierId} onChange={handleChange} disabled={isLoading}>
+                    <option value="">ללא ספק</option>
                     {suppliers.map(sup => (
                       <option key={sup.id} value={sup.id}>{sup.name}</option>
                     ))}

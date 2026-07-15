@@ -94,6 +94,23 @@
 .table-category-tag { color: var(--text-muted); font-size: 0.72rem; font-weight: 500; }
 .table-supplier-tag { color: var(--primary); font-size: 0.72rem; font-weight: 600; }
 
+.table-supplier-select {
+  max-width: 160px;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--white);
+  cursor: pointer;
+}
+
+.table-supplier-select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
 .expiry-badge {
   display: inline-block;
   padding: 2px 8px;

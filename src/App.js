@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Dashboard from './components/Dashboard';
 import Inventory from './components/Inventory';
 import Suppliers from './components/Suppliers';
@@ -10,6 +10,7 @@ import ChangePassword from './components/ChangePassword';
 import WeeklyMenu from './components/WeeklyMenu';
 import ResetPassword from './components/ResetPassword';
 import { getProducts, createProduct, updateProduct, deleteProduct, getDishes } from './api';
+import { findSupplierForCategory } from './utils/assignSuppliers';
 
 const SCREEN_LABELS = {
   dashboard: 'לוח הבקרה',
@@ -74,6 +75,7 @@ function App() {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [toasts, setToasts] = useState([]);
+  const suppliersAssignedRef = useRef(false);
 
   const navigate = useCallback((screen) => {
     window.history.pushState({ screen }, '', `#${screen}`);
@@ -118,6 +120,7 @@ function App() {
       setSuppliers([]);
       setCurrentScreen('dashboard');
       setSessionExpired(true);
+      suppliersAssignedRef.current = false;
     };
     window.addEventListener('auth-expired', handleExpired);
     return () => window.removeEventListener('auth-expired', handleExpired);
@@ -189,6 +192,7 @@ function App() {
       }));
       
       setInventory(formattedProducts);
+      suppliersAssignedRef.current = false;
       setError(null);
     } catch (err) {
       console.error('Error loading products:', err);
@@ -197,6 +201,54 @@ function App() {
       setIsLoading(false);
     }
   };
+
+  // שייך אוטומטית ספקים למוצרים שמסומנים "ללא ספק" (לפי קטגוריה)
+  useEffect(() => {
+    if (!isLoggedIn || userRole !== 'Admin') return;
+    if (suppliers.length === 0 || inventory.length === 0) return;
+    if (suppliersAssignedRef.current) return;
+
+    const supplierIds = new Set(suppliers.map(s => String(s.id)));
+    const needsAssign = inventory.filter(
+      item => !item.supplierId || !supplierIds.has(String(item.supplierId))
+    );
+    if (needsAssign.length === 0) {
+      suppliersAssignedRef.current = true;
+      return;
+    }
+
+    suppliersAssignedRef.current = true;
+
+    (async () => {
+      const assigned = [];
+      for (const item of needsAssign) {
+        const supplier = findSupplierForCategory(suppliers, item.category);
+        if (!supplier) continue;
+        try {
+          await updateProduct(item.id, {
+            name: item.name,
+            category: item.category,
+            quantity: item.quantity,
+            expiryDate: item.expiryDate
+              ? new Date(item.expiryDate).toISOString()
+              : new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+            alertBeforeDays: item.minQuantity,
+            supplierId: String(supplier.id)
+          });
+          assigned.push({ id: item.id, supplierId: String(supplier.id) });
+        } catch (err) {
+          console.error('Error assigning supplier to', item.name, err);
+        }
+      }
+      if (assigned.length > 0) {
+        setInventory(prev => prev.map(item => {
+          const a = assigned.find(x => x.id === item.id);
+          return a ? { ...item, supplierId: a.supplierId } : item;
+        }));
+        showToast(`${assigned.length} מוצרים שויכו לספקים לפי קטגוריה`, 'success');
+      }
+    })();
+  }, [isLoggedIn, userRole, suppliers, inventory, showToast]);
 
   useEffect(() => {
     if (inventory.length > 0) {
@@ -215,7 +267,9 @@ function App() {
         name: item.name,
         category: item.category,
         quantity: newQuantity,
-        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        expiryDate: item.expiryDate
+          ? new Date(item.expiryDate).toISOString()
+          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         alertBeforeDays: item.minQuantity,
         supplierId: item.supplierId || null
       });
@@ -229,12 +283,38 @@ function App() {
     }
   };
 
+  const updateProductSupplier = async (id, supplierId) => {
+    const item = inventory.find(i => i.id === id);
+    if (!item) return;
+    try {
+      await updateProduct(id, {
+        name: item.name,
+        category: item.category,
+        quantity: item.quantity,
+        expiryDate: item.expiryDate
+          ? new Date(item.expiryDate).toISOString()
+          : new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+        alertBeforeDays: item.minQuantity,
+        supplierId: supplierId || null
+      });
+      setInventory(prev => prev.map(i =>
+        i.id === id ? { ...i, supplierId: supplierId || null } : i
+      ));
+      showToast('הספק עודכן בהצלחה', 'success');
+    } catch (err) {
+      console.error('Error updating supplier:', err);
+      showToast('שגיאה בעדכון הספק', 'error');
+    }
+  };
+
   const handleLogout = () => {
     clearTimeout(_autoLogoutTimer);
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('username');
     setIsLoggedIn(false);
     setInventory([]);
+    setSuppliers([]);
+    suppliersAssignedRef.current = false;
     setCurrentScreen('dashboard');
   };
 
@@ -324,6 +404,7 @@ function App() {
             setInventory={setInventory}
             suppliers={suppliers}
             updateQuantity={updateQuantity}
+            updateProductSupplier={updateProductSupplier}
             showToast={showToast}
             isAdmin={userRole === 'Admin'}
           />
