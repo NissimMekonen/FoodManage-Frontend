@@ -170,3 +170,352 @@
 .order-action-btn--whatsapp:hover {
   background: #1ebe5d;
 }
+
+/* ===== חיפוש והוספת מוצרים ===== */
+.order-add-section {
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.order-add-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.order-add-header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.order-quick-low-btn {
+  padding: 6px 12px;
+  border: 1px solid rgba(231, 76, 60, 0.35);
+  background: rgba(231, 76, 60, 0.08);
+  color: #c0392b;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.order-quick-low-btn:hover {
+  background: rgba(231, 76, 60, 0.15);
+}
+
+.order-search-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.order-search-icon {
+  position: absolute;
+  right: 12px;
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.order-search-input {
+  width: 100%;
+  padding: 10px 36px 10px 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  background: var(--surface-high);
+  color: var(--text);
+  box-sizing: border-box;
+}
+
+.order-search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--white);
+}
+
+.order-search-clear {
+  position: absolute;
+  left: 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 4px;
+}
+
+.order-search-hint {
+  margin: 0 0 10px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.order-product-list {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-high);
+}
+
+.order-product-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.order-product-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.order-product-row:last-child { border-bottom: none; }
+.order-product-row.is-low { background: rgba(231, 76, 60, 0.05); }
+
+.order-product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.order-product-info strong {
+  font-size: 0.88rem;
+}
+
+.order-product-meta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.order-low-tag {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(231, 76, 60, 0.15);
+  color: #c0392b;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.order-other-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.order-add-btn {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 6px;
+  background: var(--primary);
+  color: #2c1a00;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.order-add-btn:hover:not(:disabled) { opacity: 0.9; }
+.order-add-btn.added,
+.order-add-btn:disabled {
+  background: var(--surface-highest);
+  color: var(--text-muted);
+  cursor: default;
+}
+
+/* ===== עגלת הזמנה ===== */
+.order-cart-section h3 {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+}
+
+.order-empty-cart {
+  padding: 24px !important;
+  font-size: 0.85rem;
+}
+
+.order-qty-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.order-qty-input {
+  width: 88px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  background: var(--white);
+  color: var(--text);
+}
+
+.order-qty-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.order-qty-unit {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.order-remove-btn {
+  border: none;
+  background: rgba(231, 76, 60, 0.1);
+  color: #c0392b;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.15s;
+}
+
+.order-remove-btn:hover {
+  background: rgba(231, 76, 60, 0.2);
+}
+
+.order-line-low {
+  background: rgba(231, 76, 60, 0.04);
+}
+
+/* ===== טיוטות מקבילות ===== */
+.order-drafts-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 10px;
+}
+
+.order-drafts-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #b45309;
+  white-space: nowrap;
+}
+
+.order-drafts-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.order-draft-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.order-draft-chip:hover {
+  border-color: var(--primary);
+}
+
+.order-draft-chip.active {
+  background: var(--primary);
+  color: #2c1a00;
+  border-color: var(--primary);
+}
+
+.order-draft-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.12);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.order-draft-chip.active .order-draft-count {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.order-active-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  padding: 8px 12px;
+  background: var(--surface-high);
+  border-radius: 8px;
+  font-size: 0.88rem;
+}
+
+.order-active-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.order-cart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.order-cart-header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.order-clear-btn {
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.order-clear-btn:hover {
+  border-color: #c0392b;
+  color: #c0392b;
+  background: rgba(231, 76, 60, 0.06);
+}
