@@ -115,6 +115,13 @@ export const updateDish = async (id, dish) => apiCall(`/Menu/${id}`, { method: '
 
 export const deleteDish = async (id) => apiCall(`/Menu/${id}`, { method: 'DELETE' });
 
+export const getExpectedGuests = async () => apiCall('/Menu/expected-guests');
+
+export const saveExpectedGuests = async (guests) =>
+  apiCall('/Menu/expected-guests', { method: 'PUT', body: JSON.stringify(guests) });
+
+export const checkMenuInventory = async () => apiCall('/Menu/check-inventory');
+
 // ========== WEEKLY SURVIVAL ==========
 export const getWeeklySurvival = async () => {
     return apiCall('/Product/weekly-check');

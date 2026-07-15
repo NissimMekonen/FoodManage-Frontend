@@ -425,7 +425,7 @@ function App() {
         )}
 
         {currentScreen === 'menu' && (
-          <WeeklyMenu inventory={inventory} isAdmin={userRole === 'Admin'} />
+          <WeeklyMenu inventory={inventory} isAdmin={userRole === 'Admin'} showToast={showToast} />
         )}
 
         {showChangePassword && (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './styles/menu.css';
-import { getDishes, createDish, updateDish, deleteDish, getWeeklySurvival, suggestReplacement } from '../api';
+import { getDishes, createDish, updateDish, deleteDish, getWeeklySurvival, suggestReplacement, getExpectedGuests, saveExpectedGuests, checkMenuInventory } from '../api';
+import { computeWeeklyInventoryNeed, normalizeInventoryCheckResponse } from '../utils/inventoryCheck';
 import ConfirmModal from './ConfirmModal';
 
 const MEALS = [
@@ -9,11 +10,26 @@ const MEALS = [
   { key: 'dinner',    label: 'ארוחת ערב',    icon: 'bi-moon-stars-fill', cssClass: 'meal-dinner'    },
 ];
 
+const WEEK_DAYS = [
+  { key: 'sunday',    label: 'א׳', full: 'ראשון' },
+  { key: 'monday',    label: 'ב׳', full: 'שני' },
+  { key: 'tuesday',   label: 'ג׳', full: 'שלישי' },
+  { key: 'wednesday', label: 'ד׳', full: 'רביעי' },
+  { key: 'thursday',  label: 'ה׳', full: 'חמישי' },
+  { key: 'friday',    label: 'ו׳', full: 'שישי' },
+  { key: 'saturday',  label: 'ש׳', full: 'שבת' },
+];
+
+const EMPTY_GUESTS = {
+  sunday: 0, monday: 0, tuesday: 0, wednesday: 0,
+  thursday: 0, friday: 0, saturday: 0
+};
+
 const UNITS = ["ק\"ג", 'גרם', 'ליטר', "מ\"ל", "יח'", 'כוס', 'כף', 'כפית'];
 const EMPTY_FORM = { name: '', ingredients: [], recipe: [] };
 const STATUS_ICON = { ok: '✅', low: '⚠️', out: '❌', unknown: '❓' };
 
-function WeeklyMenu({ inventory = [], isAdmin }) {
+function WeeklyMenu({ inventory = [], isAdmin, showToast }) {
   const [dishes, setDishes]             = useState([]);
   const [showSurvival, setShowSurvival] = useState(false);
   const [survivalData, setSurvivalData] = useState(null);
@@ -27,11 +43,102 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
   const [dishForm, setDishForm]         = useState(EMPTY_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirm, setConfirm] = useState({ open: false, title: '', message: '', onConfirm: null });
+  const [guests, setGuests] = useState(EMPTY_GUESTS);
+  const [savingGuests, setSavingGuests] = useState(false);
+  const [showInvCheck, setShowInvCheck] = useState(false);
+  const [invCheckData, setInvCheckData] = useState(null);
+  const [loadingInvCheck, setLoadingInvCheck] = useState(false);
 
-  useEffect(() => { loadDishes(); }, []);
+  useEffect(() => {
+    loadDishes();
+    loadGuests();
+  }, []);
 
   const loadDishes = async () => {
     try { setDishes(await getDishes()); } catch {}
+  };
+
+  const loadGuests = async () => {
+    try {
+      const data = await getExpectedGuests();
+      setGuests({ ...EMPTY_GUESTS, ...data });
+    } catch {}
+  };
+
+  const handleGuestChange = (dayKey, value) => {
+    const n = parseInt(value, 10);
+    setGuests(prev => ({ ...prev, [dayKey]: isNaN(n) || n < 0 ? 0 : n }));
+  };
+
+  const handleSaveGuests = async () => {
+    if (!isAdmin) return;
+    setSavingGuests(true);
+    try {
+      const saved = await saveExpectedGuests(guests);
+      setGuests({ ...EMPTY_GUESTS, ...saved });
+      showToast?.('צפי הסועדים נשמר בהצלחה', 'success');
+    } catch {
+      showToast?.('שגיאה בשמירת צפי הסועדים', 'error');
+    } finally {
+      setSavingGuests(false);
+    }
+  };
+
+  const handleInventoryCheck = async () => {
+    setShowInvCheck(true);
+    setLoadingInvCheck(true);
+    setInvCheckData(null);
+
+    const totalGuests = WEEK_DAYS.reduce((s, d) => s + (Number(guests[d.key]) || 0), 0);
+    if (totalGuests <= 0) {
+      setInvCheckData({
+        isSufficient: false,
+        message: 'יש להזין צפי סועדים לפחות ליום אחד ואז לבדוק שוב.',
+        totalGuestsWeek: 0,
+        dishesCounted: dishes.length,
+        products: [],
+        missingProducts: []
+      });
+      setLoadingInvCheck(false);
+      showToast?.('הזן קודם צפי סועדים לימים בשבוע', 'error');
+      return;
+    }
+
+    // שמירה ברקע אם אפשר — לא חוסם את החישוב
+    if (isAdmin) {
+      saveExpectedGuests(guests).catch(() => {});
+    }
+
+    // חישוב מקומי תמיד (עובד גם בלי Backend)
+    const localResult = computeWeeklyInventoryNeed(guests, dishes, inventory);
+
+    try {
+      const apiRaw = await checkMenuInventory();
+      const apiResult = normalizeInventoryCheckResponse(apiRaw);
+      // אם ה־API החזיר תוצאה עם מוצרים — נשתמש בו; אחרת מקומי
+      if (apiResult && (apiResult.products?.length > 0 || apiResult.totalGuestsWeek > 0)) {
+        // השלם orderUrgent אם חסר
+        const withOrder = {
+          ...apiResult,
+          products: (apiResult.products || []).map(p => ({
+            ...p,
+            orderUrgent: p.orderUrgent ?? p.shortage ?? 0
+          })),
+          missingProducts: (apiResult.missingProducts || []).map(p => ({
+            ...p,
+            orderUrgent: p.orderUrgent ?? p.shortage ?? 0
+          }))
+        };
+        setInvCheckData(withOrder.products.length ? withOrder : localResult);
+      } else {
+        setInvCheckData(localResult);
+      }
+    } catch (err) {
+      console.warn('check-inventory API failed, using local calc', err);
+      setInvCheckData(localResult);
+    } finally {
+      setLoadingInvCheck(false);
+    }
   };
 
   const getStatus = (ing) => {
@@ -141,10 +248,57 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
       {/* כותרת */}
       <div className="wm-header">
         <h2 className="wm-title">תפריט המטבח 🍽️</h2>
-        <button className="survival-btn" onClick={handleSurvivalCheck}>
-          <i className="bi bi-shield-check"></i> נשרוד את השבוע?
-        </button>
+        <div className="wm-header-actions">
+          <button className="inventory-check-btn" onClick={handleInventoryCheck}>
+            <i className="bi bi-box-seam"></i> בדוק זמינות מלאי
+          </button>
+          <button className="survival-btn" onClick={handleSurvivalCheck}>
+            <i className="bi bi-shield-check"></i> נשרוד את השבוע?
+          </button>
+        </div>
       </div>
+
+      {/* צפי סועדים לשבוע */}
+      <section className="guests-forecast-panel">
+        <div className="guests-forecast-header">
+          <div>
+            <h3><i className="bi bi-people-fill"></i> צפי סועדים שבועי</h3>
+            <p>הזן כמה סועדים צפויים בכל יום — החישוב מול המלאי יתבסס על כמות לסועד בכל מנה</p>
+          </div>
+          {isAdmin && (
+            <button
+              type="button"
+              className="guests-save-btn"
+              onClick={handleSaveGuests}
+              disabled={savingGuests}
+            >
+              {savingGuests ? 'שומר...' : 'שמור צפי'}
+            </button>
+          )}
+        </div>
+        <div className="guests-days-grid">
+          {WEEK_DAYS.map(day => (
+            <div key={day.key} className="guests-day-cell">
+              <label title={day.full}>
+                <span className="guests-day-label">{day.label}</span>
+                <span className="guests-day-full">{day.full}</span>
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={guests[day.key] ?? 0}
+                onChange={e => handleGuestChange(day.key, e.target.value)}
+                disabled={!isAdmin}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="guests-total">
+          סה״כ סועדים בשבוע:{' '}
+          <strong>{WEEK_DAYS.reduce((sum, d) => sum + (Number(guests[d.key]) || 0), 0)}</strong>
+        </div>
+      </section>
 
       {/* 3 עמודות */}
       <div className="wm-columns">
@@ -215,7 +369,7 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
                 />
               </div>
               <div className="form-group">
-                <label>מרכיבים</label>
+                <label>מרכיבים <span className="form-hint">(כמות לסועד בודד)</span></label>
                 {dishForm.ingredients.map((ing, i) => (
                   <div key={i} className="ing-form-row">
                     <select
@@ -232,7 +386,7 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
                       ))}
                     </select>
                     <input type="text" value={ing.name} onChange={e => updIng(i, 'name', e.target.value)} placeholder="שם מרכיב" />
-                    <input type="number" value={ing.amount} onChange={e => updIng(i, 'amount', e.target.value)} placeholder="כמות" min="0" step="any" />
+                    <input type="number" value={ing.amount} onChange={e => updIng(i, 'amount', e.target.value)} placeholder="לסועד" min="0" step="any" title="כמות לסועד" />
                     <select value={ing.unit} onChange={e => updIng(i, 'unit', e.target.value)}>
                       {UNITS.map(u => <option key={u}>{u}</option>)}
                     </select>
@@ -343,6 +497,103 @@ function WeeklyMenu({ inventory = [], isAdmin }) {
 
             {!dishModal.ingredients?.length && !dishModal.recipe?.length && (
               <div className="wm-empty">אין פרטים רשומים למנה זו</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* מודאל בדיקת זמינות מלאי לפי צפי סועדים */}
+      {showInvCheck && (
+        <div className="modal-overlay" onClick={() => setShowInvCheck(false)}>
+          <div className="modal-box modal-inventory-check" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3><i className="bi bi-box-seam"></i> בדיקת זמינות מלאי לשבוע</h3>
+              <button className="wm-close-btn" onClick={() => setShowInvCheck(false)}><i className="bi bi-x-lg"></i></button>
+            </div>
+            {loadingInvCheck ? (
+              <div className="wm-loading">מחשב צריכה מול מלאי...</div>
+            ) : invCheckData ? (
+              <div>
+                <div className={`inv-check-verdict ${invCheckData.isSufficient ? 'inv-ok' : 'inv-critical'}`}>
+                  {invCheckData.isSufficient ? '✅' : '🚨'} {invCheckData.message}
+                </div>
+                <div className="survival-stats">
+                  <div className="survival-stat"><span>סועדים בשבוע</span><strong>{invCheckData.totalGuestsWeek}</strong></div>
+                  <div className="survival-stat"><span>מנות בתפריט</span><strong>{invCheckData.dishesCounted}</strong></div>
+                  <div className="survival-stat"><span>מוצרים בפיגור</span><strong>{invCheckData.missingProducts?.length || 0}</strong></div>
+                </div>
+
+                {invCheckData.missingProducts?.length > 0 && (
+                  <div className="inv-check-table-wrap">
+                    <h4 className="inv-check-subtitle">🚨 חובה להזמין דחוף</h4>
+                    <p className="inv-check-explain">
+                      לפי צפי הסועדים והמרכיבים במנות — אלה המוצרים שאין מספיק מהם במלאי עד סוף השבוע:
+                    </p>
+                    <table className="inv-check-table">
+                      <thead>
+                        <tr>
+                          <th>מוצר</th>
+                          <th>במלאי כעת</th>
+                          <th>נדרש לשבוע</th>
+                          <th>חוסר</th>
+                          <th>להזמין דחוף</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {invCheckData.missingProducts.map((p, i) => (
+                          <tr key={i} className="inv-row-missing">
+                            <td><strong>{p.productName}</strong></td>
+                            <td>{p.currentStock} {p.unit}</td>
+                            <td>{p.requiredAmount} {p.unit}</td>
+                            <td className="inv-shortage">{p.shortage} {p.unit}</td>
+                            <td>
+                              <span className="inv-order-badge">
+                                {p.orderUrgent ?? p.shortage} {p.unit}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {invCheckData.isSufficient && invCheckData.products?.length > 0 && (
+                  <div className="inv-check-ok-box">
+                    כל חומרי הגלם הדרושים לתפריט השבועי קיימים במלאי לפי הצפי שהוזן.
+                  </div>
+                )}
+
+                {invCheckData.products?.length > 0 && (
+                  <details className="inv-check-all">
+                    <summary>פירוט מלא של כל המוצרים בחישוב ({invCheckData.products.length})</summary>
+                    <div className="inv-check-table-wrap">
+                      <table className="inv-check-table">
+                        <thead>
+                          <tr>
+                            <th>מוצר</th>
+                            <th>במלאי</th>
+                            <th>נדרש</th>
+                            <th>סטטוס</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {invCheckData.products.map((p, i) => (
+                            <tr key={i} className={p.isMissing ? 'inv-row-missing' : 'inv-row-ok'}>
+                              <td>{p.productName}</td>
+                              <td>{p.currentStock} {p.unit}</td>
+                              <td>{p.requiredAmount} {p.unit}</td>
+                              <td>{p.isMissing ? `חסר ${p.shortage} — להזמין` : 'מספיק ✓'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </details>
+                )}
+              </div>
+            ) : (
+              <div className="wm-empty">לא התקבלו נתונים לבדיקה</div>
             )}
           </div>
         </div>
