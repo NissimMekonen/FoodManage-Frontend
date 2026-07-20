@@ -62,6 +62,19 @@
 
 .order-results h3 { font-size: 0.95rem; margin-bottom: 13px; }
 
+.no-permission-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 14px 20px;
+  background: rgba(231, 76, 60, 0.08);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: var(--radius);
+  color: #e74c3c;
+  font-size: 0.95rem;
+}
+
 .no-missing-alert {
   text-align: center;
   padding: 32px;

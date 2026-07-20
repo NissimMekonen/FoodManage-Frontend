@@ -544,6 +544,7 @@ function Suppliers({ suppliers, setSuppliers, inventory, showToast, isAdmin }) {
                     </table>
                   </div>
 
+                  {isAdmin ? (
                   <div className="order-actions-row">
                     <button className="order-action-btn order-action-btn--copy" onClick={() => setShowOrderText(v => !v)}>
                       <i className="bi bi-envelope-paper"></i>
@@ -554,6 +555,12 @@ function Suppliers({ suppliers, setSuppliers, inventory, showToast, isAdmin }) {
                       שלח בוואטסאפ
                     </button>
                   </div>
+                  ) : (
+                  <div className="no-permission-notice">
+                    <i className="bi bi-lock-fill"></i>
+                    אין הרשאה לביצוע הזמנות — לאישור ושליחת הזמנה יש לפנות למנהל המערכת.
+                  </div>
+                  )}
                   {showOrderText && orderText && (
                     <div className="order-text-box">
                       <button className="order-copy-btn" onClick={copyOrderToClipboard} title="העתק">
